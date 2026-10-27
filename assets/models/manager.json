@@ -1,7 +1,7 @@
 {
   "name": "manager",
-  "vertices": 13084,
-  "triangles": 6482,
+  "vertices": 15098,
+  "triangles": 7522,
   "frames": 35,
   "clips": {
     "idle": {
@@ -42,8 +42,8 @@
   },
   "winding": "CCW",
   "position_quantization_units": [
-    0.2711046884149532,
-    0.19887703138782625,
+    0.2886181645745074,
+    0.2114441434681469,
     0.23088185397829797
   ]
 }
