@@ -1,0 +1,27 @@
+✔ retained complete-mission input replay matches every pinned digest on repeated runs (318.482643ms)
+✔ level spawn hulls, finite brush geometry, and all mission locations are navigable (27.391203ms)
+✔ Quake movement accelerates, jumps, lands, and cannot cross a closed mission gate (23.148807ms)
+✔ rifle damage, ammunition and cadence are real and seeded (0.858897ms)
+✔ world geometry blocks hitscan, projectiles and area damage visibility (0.611647ms)
+✔ Refactor Cannon travels, explodes, damages a target and consumes separate ammunition (0.554431ms)
+✔ empty weapons cannot fire; projectile spawn budget is bounded (0.177055ms)
+✔ SHITPOSTER requires unlock and charge, interrupts attacks and costs its resource (0.301412ms)
+✔ stunned enemies stay frozen then resume normal AI and firing; cooldown and immunity prevent stun lock (8.125885ms)
+✔ stun respects distance and line of sight, and ability edge does not retrigger while held (2.889069ms)
+✔ health reaches a terminal defeat and no later step mutates gameplay (2.136191ms)
+✔ enemy AI acquires the player, telegraphs and fires projectiles that can damage (5.873821ms)
+✔ supply pickup is conditional, single-use and bounded (1.257003ms)
+✔ mission has ordered unlock, ambush, relays, core, three finite waves and extraction (28.687477ms)
+✔ interaction resets when released or moving away; core cannot be skipped (1.83537ms)
+✔ same recorded per-tick inputs are independent of render batching (32.829517ms)
+✔ cosmetic rendering/randomness cannot affect simulation; global random is forbidden during steps (19.943234ms)
+✔ simulation instances have independent collision stamps and gate states (0.671396ms)
+✔ narrowing sector shoulders contain the player with mission gates closed or open (18.259069ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 422.35198

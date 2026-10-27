@@ -1,0 +1,20 @@
+{
+  "name": "cannon",
+  "vertices": 362,
+  "triangles": 668,
+  "frames": 1,
+  "clips": {
+    "idle": {
+      "start": 0,
+      "count": 1,
+      "fps": 1,
+      "loop": true
+    }
+  },
+  "winding": "CCW",
+  "position_quantization_units": [
+    0.3846223764705882,
+    0.014066541176470588,
+    0.065418
+  ]
+}

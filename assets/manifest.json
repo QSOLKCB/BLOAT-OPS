@@ -1,0 +1,333 @@
+{
+  "version": 1,
+  "upstream": {
+    "repository": "https://github.com/QSOLKCB/QwakeTF",
+    "commit": "a1f7dbbd2dc34bb29b179042eb22cfe4bd411815",
+    "license": "Apache-2.0"
+  },
+  "conversion": "tools/convert-models.py; 35 sampled poses per character; MDL position quantization; original material colors; metadata records clip ranges",
+  "source_inputs": [
+    {
+      "name": "Shotgun_4.obj",
+      "url": "https://drive.google.com/file/d/1RmtFVZxcC_lgXpnsXkoCWcKY8AN1y_yj/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "bytes": 26674,
+      "sha256": "baecd131436ee48576607178bdda38ed2c85ccebf09ef593cdc64b295969cdf4"
+    },
+    {
+      "name": "Shotgun_4.mtl",
+      "url": "https://drive.google.com/file/d/1x6_lsMkFiuQf0TCadXXty2gMdcmczuem/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "bytes": 954,
+      "sha256": "31836067fd807b45650d7e70676935d215f68cdd30b6414bc00775d8d3801b95"
+    },
+    {
+      "name": "AssaultRifle_1.obj",
+      "url": "https://drive.google.com/file/d/1CyEzGioyY2r7SENNA5xokzeAzj67pYn_/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "bytes": 45902,
+      "sha256": "2a755393626052558165d180b04b0d39a1e3c8a3b608cfe6bf2aa832ad4c656a"
+    },
+    {
+      "name": "AssaultRifle_1.mtl",
+      "url": "https://drive.google.com/file/d/1q0oAOdZb2ocANLbZ6hwJdqRDt7YOoENV/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "bytes": 782,
+      "sha256": "a4a2037eb1ca1e3047d4d510c50d36d18a9e975f24392009e2ef83019644ebb1"
+    },
+    {
+      "name": "Swat.gltf",
+      "original_name": "Swat.gltf",
+      "url": "https://drive.google.com/file/d/1VGmU5f8a43NBT22JWB507NDSLbmNxzF9/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "bytes": 3368868,
+      "sha256": "622b3f36fcac90539ef8f7121ec1f11b5e1ae603a085019b3fa96eba20dddfd3"
+    },
+    {
+      "name": "SuitWoman.gltf",
+      "original_name": "Suit.gltf",
+      "url": "https://drive.google.com/file/d/1GjWtofxjmPku25cXJxHrzLLeUbXw7A_s/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "bytes": 3142156,
+      "sha256": "937d5c8d08fb5570f6a4e1dd79a3878335444d175aae3b0e9e2babdac36a17f7"
+    }
+  ],
+  "files": [
+    {
+      "path": "assets/licenses/librequake/COPYING",
+      "bytes": 1697,
+      "sha256": "c3426ae10fd52ab1a3c3d4de4f2fae60543403e3cfd09ae5dc2ec16ae4717d28",
+      "source": "Licence or provenance metadata",
+      "author": "Original notice authors / QSOL-IMC",
+      "license": "See content",
+      "converted": false
+    },
+    {
+      "path": "assets/licenses/librequake/CREDITS",
+      "bytes": 3254,
+      "sha256": "60b632851de3e5d02cb96ed158ff06700ced1c9fb6425f2d5d10509392021bd0",
+      "source": "Licence or provenance metadata",
+      "author": "Original notice authors / QSOL-IMC",
+      "license": "See content",
+      "converted": false
+    },
+    {
+      "path": "assets/licenses/librequake/README-IMPORTANT-LICENCE-INFO",
+      "bytes": 706,
+      "sha256": "121e4f2bbae888f442be76795c7e1b431bbfce9c7dd968407b4da969ccb50eae",
+      "source": "Licence or provenance metadata",
+      "author": "Original notice authors / QSOL-IMC",
+      "license": "See content",
+      "converted": false
+    },
+    {
+      "path": "assets/licenses/quaternius-guns.txt",
+      "bytes": 353,
+      "sha256": "23612a9c73a48ee3acbe627305b696e1c870671a1d2bdc8add03641b76f61097",
+      "source": "Licence or provenance metadata",
+      "author": "Original notice authors / QSOL-IMC",
+      "license": "See content",
+      "converted": false
+    },
+    {
+      "path": "assets/licenses/quaternius-men.txt",
+      "bytes": 361,
+      "sha256": "31386afe0ce55a33f456e74392e3bcc03d5ccab87ac9ac224950361501877a6e",
+      "source": "Licence or provenance metadata",
+      "author": "Original notice authors / QSOL-IMC",
+      "license": "See content",
+      "converted": false
+    },
+    {
+      "path": "assets/licenses/quaternius-women.txt",
+      "bytes": 361,
+      "sha256": "31386afe0ce55a33f456e74392e3bcc03d5ccab87ac9ac224950361501877a6e",
+      "source": "Licence or provenance metadata",
+      "author": "Original notice authors / QSOL-IMC",
+      "license": "See content",
+      "converted": false
+    },
+    {
+      "path": "assets/models/cannon.json",
+      "bytes": 309,
+      "sha256": "736e969a330d3a82bf5bdc997616f5e7d3287fdb1de7a0cebe498a9fcfe08ca3",
+      "source": "https://drive.google.com/file/d/1RmtFVZxcC_lgXpnsXkoCWcKY8AN1y_yj/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/cannon.mdl",
+      "bytes": 16852,
+      "sha256": "ca2abeb5826555956c17de4a70d61c2faa7cc3e4dd49f9d39a52f4962440b51a",
+      "source": "https://drive.google.com/file/d/1RmtFVZxcC_lgXpnsXkoCWcKY8AN1y_yj/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/cannon.pal",
+      "bytes": 768,
+      "sha256": "c0104a2a8115395028560d776547786ba1f4373a55811d2e6a6e8e3cbfcaaaad",
+      "source": "https://drive.google.com/file/d/1RmtFVZxcC_lgXpnsXkoCWcKY8AN1y_yj/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/harvester.json",
+      "bytes": 916,
+      "sha256": "5a5c3b13722bdd6bb478b74c2a665ffbadbef13c01c19d2f50ea7d6ce466a171",
+      "source": "https://drive.google.com/file/d/1VGmU5f8a43NBT22JWB507NDSLbmNxzF9/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/harvester.mdl",
+      "bytes": 2615068,
+      "sha256": "822d417a3ed292f007ebb0d19fa17bc88c0e29e87a5a4b3daed2c3b5dc53d201",
+      "source": "https://drive.google.com/file/d/1VGmU5f8a43NBT22JWB507NDSLbmNxzF9/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/harvester.pal",
+      "bytes": 768,
+      "sha256": "2dd7820ccd515d8ae0bfc6373202d5d11a66318e1e30f01740b0d04ea310224d",
+      "source": "https://drive.google.com/file/d/1VGmU5f8a43NBT22JWB507NDSLbmNxzF9/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/manager.json",
+      "bytes": 902,
+      "sha256": "59717c786f2f6546625c1359678d48df2a5d8cfbffb8cb49503efb4c7f28dea0",
+      "source": "https://drive.google.com/file/d/1GjWtofxjmPku25cXJxHrzLLeUbXw7A_s/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/manager.mdl",
+      "bytes": 2093804,
+      "sha256": "7d528dbb7cc4d1eb49b64476394ace2f96317b7e6e1a816731345fb5f265a456",
+      "source": "https://drive.google.com/file/d/1GjWtofxjmPku25cXJxHrzLLeUbXw7A_s/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/manager.pal",
+      "bytes": 768,
+      "sha256": "52af6566afa50a84cfd8a1e6b41f6a096791cc836f9530d3a851a2c0b37cee43",
+      "source": "https://drive.google.com/file/d/1GjWtofxjmPku25cXJxHrzLLeUbXw7A_s/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/rifle.json",
+      "bytes": 321,
+      "sha256": "74ec0087d311c46c098780224a14071f6871fa083bc006acc7abf67385e96fd2",
+      "source": "https://drive.google.com/file/d/1CyEzGioyY2r7SENNA5xokzeAzj67pYn_/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/rifle.mdl",
+      "bytes": 32596,
+      "sha256": "8bb3d920fb4390f1b98eb11e7c8306d51ee5e5743f85fa0bb96cf1c75cc3d69c",
+      "source": "https://drive.google.com/file/d/1CyEzGioyY2r7SENNA5xokzeAzj67pYn_/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/models/rifle.pal",
+      "bytes": 768,
+      "sha256": "80642f86a6dcb5dd7edc13f4d6bb3c03bc36cecfa3f0019f1774f667dfbefaa3",
+      "source": "https://drive.google.com/file/d/1CyEzGioyY2r7SENNA5xokzeAzj67pYn_/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": true
+    },
+    {
+      "path": "assets/source/quaternius/AssaultRifle_1.mtl",
+      "bytes": 782,
+      "sha256": "a4a2037eb1ca1e3047d4d510c50d36d18a9e975f24392009e2ef83019644ebb1",
+      "source": "https://drive.google.com/file/d/1q0oAOdZb2ocANLbZ6hwJdqRDt7YOoENV/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": false
+    },
+    {
+      "path": "assets/source/quaternius/AssaultRifle_1.obj",
+      "bytes": 45902,
+      "sha256": "2a755393626052558165d180b04b0d39a1e3c8a3b608cfe6bf2aa832ad4c656a",
+      "source": "https://drive.google.com/file/d/1CyEzGioyY2r7SENNA5xokzeAzj67pYn_/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": false
+    },
+    {
+      "path": "assets/source/quaternius/Shotgun_4.mtl",
+      "bytes": 954,
+      "sha256": "31836067fd807b45650d7e70676935d215f68cdd30b6414bc00775d8d3801b95",
+      "source": "https://drive.google.com/file/d/1x6_lsMkFiuQf0TCadXXty2gMdcmczuem/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": false
+    },
+    {
+      "path": "assets/source/quaternius/Shotgun_4.obj",
+      "bytes": 26674,
+      "sha256": "baecd131436ee48576607178bdda38ed2c85ccebf09ef593cdc64b295969cdf4",
+      "source": "https://drive.google.com/file/d/1RmtFVZxcC_lgXpnsXkoCWcKY8AN1y_yj/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0",
+      "converted": false
+    },
+    {
+      "path": "assets/sources.json",
+      "bytes": 1685,
+      "sha256": "a787b0e4fc4a320310a51a95714d7e18d46869f7dd8b70123ae3419ffdf131db",
+      "source": "Licence or provenance metadata",
+      "author": "Original notice authors / QSOL-IMC",
+      "license": "See content",
+      "converted": false
+    },
+    {
+      "path": "assets/textures/ceiling.png",
+      "bytes": 8478,
+      "sha256": "164cfd87b798a569ff4b4bcc316bc71711739574f310c1cc2a22198438ae3535",
+      "source": "https://github.com/QSOLKCB/QwakeTF/blob/a1f7dbbd2dc34bb29b179042eb22cfe4bd411815/assets/textures/t_metalsheeta.png",
+      "author": "Contributors to the LibreQuake project",
+      "license": "BSD-3-Clause",
+      "converted": false
+    },
+    {
+      "path": "assets/textures/concrete.png",
+      "bytes": 19519,
+      "sha256": "3980b6936284a655a4ddc835166ba4cece2eed30da05d03622896e8cb7eebfd8",
+      "source": "https://github.com/QSOLKCB/QwakeTF/blob/a1f7dbbd2dc34bb29b179042eb22cfe4bd411815/assets/textures/t_wall2a.png",
+      "author": "Contributors to the LibreQuake project",
+      "license": "BSD-3-Clause",
+      "converted": false
+    },
+    {
+      "path": "assets/textures/floor.png",
+      "bytes": 10391,
+      "sha256": "7a45a3226ba409d6aedbc69de61e9f34ad9baa0806c291d9a06065a2f99289d2",
+      "source": "https://github.com/QSOLKCB/QwakeTF/blob/a1f7dbbd2dc34bb29b179042eb22cfe4bd411815/assets/textures/treadplatemetal.png",
+      "author": "Contributors to the LibreQuake project",
+      "license": "BSD-3-Clause",
+      "converted": false
+    },
+    {
+      "path": "assets/textures/hazard.png",
+      "bytes": 3936,
+      "sha256": "dc35838a866dec879b04397fd5c327d00b6f09992363f8b4b07330d4327f7b77",
+      "source": "https://github.com/QSOLKCB/QwakeTF/blob/a1f7dbbd2dc34bb29b179042eb22cfe4bd411815/assets/textures/t_trim1a.png",
+      "author": "Contributors to the LibreQuake project",
+      "license": "BSD-3-Clause",
+      "converted": false
+    },
+    {
+      "path": "assets/textures/server.png",
+      "bytes": 5923,
+      "sha256": "821759ac7c8654c604ad77f607b3cc30135ff2eb5bf4c0e6a4c6324b6800989a",
+      "source": "https://github.com/QSOLKCB/QwakeTF/blob/a1f7dbbd2dc34bb29b179042eb22cfe4bd411815/assets/textures/comp1_1.png",
+      "author": "Contributors to the LibreQuake project",
+      "license": "BSD-3-Clause",
+      "converted": false
+    },
+    {
+      "path": "assets/textures/steel.png",
+      "bytes": 3284,
+      "sha256": "e83d70f9e8bd4aaeb11b0e0a57c29a903533e205cf72658cafc8035e8a6e0b54",
+      "source": "https://github.com/QSOLKCB/QwakeTF/blob/a1f7dbbd2dc34bb29b179042eb22cfe4bd411815/assets/textures/met_gry_flat.png",
+      "author": "Contributors to the LibreQuake project",
+      "license": "BSD-3-Clause",
+      "converted": false
+    },
+    {
+      "path": "assets/textures/wall.png",
+      "bytes": 19604,
+      "sha256": "b2f059b1156c90bbe460637a0ae3edb936e4da8a19685c56612f3397f06cff02",
+      "source": "https://github.com/QSOLKCB/QwakeTF/blob/a1f7dbbd2dc34bb29b179042eb22cfe4bd411815/assets/textures/t_wall1a.png",
+      "author": "Contributors to the LibreQuake project",
+      "license": "BSD-3-Clause",
+      "converted": false
+    }
+  ]
+}

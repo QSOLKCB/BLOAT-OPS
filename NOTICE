@@ -1,0 +1,13 @@
+BLOAT-OPS — QSOL-IMC
+Original mission, gameplay, presentation and adaptation: BLOAT-OPS contributors, 2026.
+
+This product includes engine code from QSOLKCB/QwakeTF under Apache License 2.0.
+Imported upstream commit: a1f7dbbd2dc34bb29b179042eb22cfe4bd411815
+Source: https://github.com/QSOLKCB/QwakeTF
+See LICENSE, ARCHITECTURE.md and docs/UPSTREAM_IMPORT.json for the import and modifications.
+
+Model assets: Quaternius, CC0 1.0. Exact pack notices are in assets/licenses/.
+Texture assets: Copyright © 2019-2023 Contributors to the LibreQuake project.
+All rights reserved. Redistributed under BSD-3-Clause. Full notice, terms and disclaimer:
+assets/licenses/librequake/COPYING; contributor credits: assets/licenses/librequake/CREDITS.
+See ASSET_LICENSES.md and assets/manifest.json for per-file sources and hashes.

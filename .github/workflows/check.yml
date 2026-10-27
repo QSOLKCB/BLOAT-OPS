@@ -1,0 +1,74 @@
+name: Game checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+      - name: Syntax, model integrity and asset hashes
+        run: node tools/check.mjs
+      - name: Gameplay, geometry, AI, stun recovery and retained replay
+        run: node --test tests/*.test.mjs
+      - name: Build standalone offline game
+        run: node tools/build.mjs
+      - name: Install development-only browser tools
+        run: |
+          npm install --prefix "$RUNNER_TEMP/bloat-browser" --no-audit --no-fund playwright@1.56.1
+          "$RUNNER_TEMP/bloat-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Chromium HTTP, offline, controls, gameplay and replay checks
+        run: NODE_PATH="$RUNNER_TEMP/bloat-browser/node_modules" node tools/browser-check.cjs
+      - name: Record headless benchmark
+        run: node tools/benchmark.mjs
+      - name: Retain verification evidence and standalone game
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bloat-ops-verification
+          path: |
+            test-results/
+            dist/
+          if-no-files-found: error
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+      - run: node tools/build.mjs
+      - uses: actions/configure-pages@v5
+      - name: Prepare static deployment
+        run: |
+          mkdir _site
+          cp index.html style.css LICENSE NOTICE ASSET_LICENSES.md _site/
+          cp -R src assets dist _site/
+          rm -rf _site/assets/source
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

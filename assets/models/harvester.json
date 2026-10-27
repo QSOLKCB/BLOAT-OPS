@@ -1,0 +1,49 @@
+{
+  "name": "harvester",
+  "vertices": 16270,
+  "triangles": 8794,
+  "frames": 35,
+  "clips": {
+    "idle": {
+      "start": 0,
+      "count": 8,
+      "fps": 4.800000114440921,
+      "loop": true,
+      "source": "Idle_Gun"
+    },
+    "move": {
+      "start": 8,
+      "count": 8,
+      "fps": 9.99999985098839,
+      "loop": true,
+      "source": "Run"
+    },
+    "attack": {
+      "start": 16,
+      "count": 5,
+      "fps": 8.333333002196431,
+      "loop": false,
+      "source": "Gun_Shoot"
+    },
+    "stun": {
+      "start": 21,
+      "count": 5,
+      "fps": 8.82352947363804,
+      "loop": false,
+      "source": "HitRecieve"
+    },
+    "death": {
+      "start": 26,
+      "count": 9,
+      "fps": 8.437499559950107,
+      "loop": false,
+      "source": "Death"
+    }
+  },
+  "winding": "CCW",
+  "position_quantization_units": [
+    0.3009695033398844,
+    0.21127169441961605,
+    0.22877801376691884
+  ]
+}
