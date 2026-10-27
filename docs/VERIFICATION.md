@@ -1,45 +1,28 @@
 # Verification and engineering handoff
 
-Local verification completed 27 October 2026 (Australia/Adelaide). This document reports executed checks. Remote CI and reviewer approval must be read from the PR for its exact current commit; local success is not a substitute for either. No live GitHub Pages deployment is claimed.
+Local checks executed 27 October 2026 (Australia/Adelaide) for the pistol/rifle/grenade update. Read remote CI and review status on the PR for its exact current commit. No new deployment is claimed by these local results.
 
 ## Executed checks
 
-| Check | Result | Retained evidence |
-|---|---|---|
-| JavaScript syntax and model/texture integrity | Passed; all runtime models parse, frame/triangle counts match metadata and required textures load | [Static log](evidence/static-checks.txt) |
-| Asset provenance hashes | 30 retained asset/notice/source metadata files matched SHA-256 and size | [Manifest](../assets/manifest.json) |
-| Headless regressions | 19 passed, 0 failed | [Test log](evidence/simulation-tests.txt) |
-| Geometry and navigation | All mission/spawn positions valid, all objectives reachable, graph edges validated | Simulation tests; 174 static brushes, 704 navigation nodes, 4,582 edges |
-| Weapon behaviour | Rifle damage/cadence/ammo, cannon travel/splash/ammo, cover blocking and projectile cap passed | Simulation tests |
-| SHITPOSTER behaviour | Unlock, charge, interrupted attacks, frozen stun interval, recovery/firing, immunity, cooldown, distance/visibility and held-key checks passed | Simulation tests; browser rebound-key check |
-| Mission outcomes | Ordered firmware/ambush/relay/core/waves/extraction and terminal defeat/victory passed | Simulation tests; browser victory and defeat screens |
-| Full mission without shortcuts | 2,588 input ticks; 27 kills; 3 activations; 4 stunned targets; 8 damage taken; victory | [Retained inputs](../tests/fixtures/mission-replay.json) |
-| HTTP browser | Passed under `/BLOAT-OPS/`; controls, settings, models, movement, firing, pause, rebound ability, replay, restart and defeat | [Browser report](evidence/browser.json) |
-| Offline browser | Passed via file launcher to standalone, with HTTP(S) blocked; same gameplay checks | Browser report; no external runtime requests |
-| Distribution notices | Full root NOTICE is embedded and its exact text is readable in Credits in both browser modes | Browser exact-text assertion |
-| Browser console/resources | Zero console errors, failed requests or missing resources in both modes; WebGL error 0 | Browser report |
-| Standalone build | 21 source modules embedded; 6,642,186-byte artifact tested | [Artifact receipt](evidence/standalone.json) |
+- **24 simulation tests passed**, zero failures: geometry/navigation, collision, deterministic replay, AI, stun recovery, objectives and terminal states, plus pistol click/hold/batched-press behaviour, rifle pickup/ownership and select fire, grenade gravity/impact/fuse/ammo/cooldown, and pistol switching preserving automatic rifle cadence. [Full test log](evidence/simulation-tests.txt).
+- **30 JavaScript syntax checks and 30 asset hashes passed**; all models/textures parsed. [Static log](evidence/static-checks.txt).
+- Chromium HTTP `/BLOAT-OPS/` and standalone `file:` browser checks passed, with HTTP(S) blocked offline. Real keyboard/mouse checks cover quick clicks, held pistol, unavailable rifle selection, pickup, automatic fire, B selector, semi-auto hold, RMB grenades, pause, rebound stun key, full replay victory, restart and defeat. Complete NOTICE text remains tested in both modes.
+- No console/resource errors or external runtime requests; WebGL error zero. [Browser report](evidence/browser.json).
+- Standalone rebuilt and tested: **6,646,305 bytes**, 21 source modules, 29 embedded resources. [Hash receipt](evidence/standalone.json).
+- [Pistol screenshot](screenshots/pistol.png) and [rifle screenshot](screenshots/combat.png) were captured from the tested HTTP application and visually inspected.
 
-The initial movement test accidentally advanced the mission while trying to assert a closed gate; the fixture was corrected to remain at the firmware stage. Browser tests also caught and fixed initial pointer-lock camera movement, late pointer-lock capture over a terminal UI, and source `file:` module preloading before standalone redirection. These checks remain in the test suite. Codex review then identified missing standalone NOTICE content and exposed outer edges at narrowing sector transitions. Both were fixed: browser checks now compare Credits against the complete NOTICE, and a movement regression checks both shoulders at each narrowing transition with mission gates closed and open. The retained full-mission input stream and digest are unchanged.
+## Replay revision and deterministic boundary
 
-## Reproducibility boundary
+The gameplay change deliberately replaces the old cannon/held-rifle input fixture. Snapshot and recording schema version 2 adds owned-rifle state, rifle mode, press counts, trigger latches, launcher cooldown and grenade gravity. The development controller uses normal inputs to clear intake with the pistol, collect the rifle, fire grenades, complete objectives and extract. It does not override gameplay state. Individual unit/browser fixtures separately arrange boundaries for focused checks.
 
-The full retained command stream has SHA-256 `5b6c121cdfd37c3f3837e959232fe9c95eed186475f3fb726fbbcc221a6a63a0` and final quantized state digest **`72545eaf`**. Every 300-tick checkpoint is retained. The controller that produced it uses movement, aiming, firing, ability and interaction commands only; it never edits the authoritative player, enemy or objective state. Unit/browser boundary fixtures do directly arrange controlled states, and are separate from this full playthrough.
+Current retained input SHA-256: `9dd1ec04652f860a332d38223d4c1659325d3df6806184852a5936a2f2e4b8df`. Final quantized digest: **`9a07e324`**. Victory at **2,367 ticks** (39.45 simulated seconds), 27 kills, 141 shots, 24 damage taken, 3 ability activations and 5 stunned targets. Every 300-tick checkpoint is retained. The prior fixture and evidence remain in git history; this is an intentional gameplay revision, not a digest-only update to conceal a failure.
 
-Node repeats the raw state exactly, as does Chromium when replayed twice. Node and Chromium also match the quantized checkpoint digests. An investigated raw cross-runtime mismatch was one final player-coordinate difference of `5.684341886080802e-14`; status, tick count and combat totals were identical. Digests round fractional numbers to `1e-6`; they are regression checksums, not cryptographic identity proofs. No cross-platform bitwise floating-point guarantee is made.
+Raw snapshots repeat exactly within tested Node and within tested Chromium; fractional digest values are rounded to 1e-6 for cross-runtime comparison. Cross-platform bitwise floating-point determinism is not claimed. Fast input queues are bounded to eight presses per simulation tick; pause/restart discards pending browser presses.
 
-## Performance environment and workload
+## Performance environment and limits
 
-Reported container CPU: **AMD EPYC 9V74 80-Core Processor**, Linux x64, 9 reported logical CPUs / 8 available to the process, 9.73 GiB reported memory. Shared virtual environment; no CPU pinning. Node **v24.22.1**. Local browser driver: Playwright **1.62.1** using the installed Chromium headless shell **134.0.6998.35**, ANGLE Vulkan **SwiftShader** software rendering. CI installs its own pinned Playwright 1.56.1 Chromium build on Ubuntu 24.04 and reruns the suite.
+Shared Linux x64 container, AMD EPYC 9V74 (9 reported logical CPUs, 8 available), 9.73 GiB reported RAM, Node v24.22.1. Local Playwright 1.62.1 drives Chromium headless shell 134.0.6998.35 with ANGLE Vulkan SwiftShader software rendering. CI separately uses pinned Playwright 1.56.1 on Ubuntu 24.04.
 
-Five measured headless runs after one warm-up replayed all 2,588 ticks. Mean simulation step cost ranged from **0.0153–0.0209 ms**; per-run p95 ranged from **0.0407–0.0584 ms**. Startup geometry/navigation measured **87 ms** in that shared-container sample. [Raw measurements](evidence/performance.json) include maxima and all runs. These are headless simulation figures, not browser frame-rate claims.
+Five complete-mission headless runs after warm-up averaged **0.0195–0.0393 ms/tick**. Startup geometry/navigation: 95.6 ms. Raw [performance data](evidence/performance.json) retains p95 and maxima. Browser measurements use 90 render calls plus HUD and gl.finish at 1440×900 on a replayed encounter: HTTP mean 1.92 ms, offline mean 2.31 ms. These are bounded workload measurements, not end-to-end FPS, comparative optimization claims or native-GPU certification.
 
-For the browser, 90 deterministic renders of the four-enemy ambush at **1440×900**, including HUD and `gl.finish()`, measured mean render-call costs of **1.46 ms** over HTTP and **1.61 ms** offline. Per-mode p95 values were **4.70 ms** and **0.50 ms**, respectively; one-time costs can raise the mean above the p95 in a small sample. These are bounded render-call measurements, not end-to-end display FPS or native-GPU certification. Startup to ready was **791 ms** HTTP and **627 ms** offline in this sample. All raw values and renderer strings are retained in the browser report.
-
-## Implemented scope and limits
-
-The game is playable from initial menu through extraction, with two functioning weapons, two distinct animated enemy roles, real stun/recovery, supplies, mission gating, seven finite encounters, pause/restart, victory/defeat, settings, resource provenance and offline packaging. Low-level QwakeTF systems are identified in [the architecture](../ARCHITECTURE.md); models and textures are itemized in [asset licences](../ASSET_LICENSES.md).
-
-Remaining work: human playtesting and balance, establishing the intended 5–10 minute first-run duration, improved skeletal gun attachments, native hardware and additional browser verification, mid-mission checkpoints, optional boss/summoner and broader input support. The perfect-aim regression controller completes in about 43 seconds of simulation time, so it is not evidence for typical human mission length. Characters are baked pose animations rather than runtime modular skeletal assemblies. No boss, summoner, multiplayer, cloud service, runtime glTF loader or proprietary game assets are claimed.
-
-Next milestones are in [ROADMAP.md](../ROADMAP.md). Proposed v0.1.0 release text is in [RELEASE_NOTES.md](../RELEASE_NOTES.md). The maintainer remains the final merge, tag, release and deployment authority.
+Human balance, the intended 5–10 minute first-run duration, Firefox/WebKit/native GPU coverage and improved enemy weapon attachment remain unverified. The perfect-aim controller is not representative of human playtime. The new pistol/launcher meshes are original simple brush geometry; the rifle retains the verified Quaternius mesh. No reload system, boss, summoner, checkpoints, multiplayer, touch or gamepad support is claimed. See [instructions](../INSTRUCTIONS.md), [architecture](../ARCHITECTURE.md), [licences](../ASSET_LICENSES.md), [roadmap](../ROADMAP.md) and [proposed release notes](../RELEASE_NOTES.md).

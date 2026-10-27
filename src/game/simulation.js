@@ -3,23 +3,23 @@ import { playerMove } from '../engine/pmove.js';
 import { PL_MINS, PL_MAXS } from '../engine/defs.js';
 import { World, MASK_PLAYER } from '../engine/world.js';
 import { Random } from './random.js';
-import { SPAWN, SUPPLIES, ENCOUNTERS } from './level.js';
+import { SPAWN, RIFLE_PICKUP, SUPPLIES, ENCOUNTERS } from './level.js';
 import { ENEMIES, updateEnemies } from './enemies.js';
 import { activateAbility } from './ability.js';
-import { fireWeapon, updateProjectiles } from './weapons.js';
+import { updateWeapons, updateProjectiles } from './weapons.js';
 import { updateObjectives } from './objectives.js';
 export const TICK=1/60, MAX_ENEMIES=32;
 export function normalizeInput(input={}) {
   const finite=(v,f=0)=>Number.isFinite(v)?v:f;
-  return {forward:clamp(finite(input.forward),-1,1),side:clamp(finite(input.side),-1,1),jump:!!input.jump,sprint:!!input.sprint,fire:!!input.fire,secondary:!!input.secondary,aim:!!input.aim,ability:!!input.ability,interact:!!input.interact,weapon:input.weapon===1?1:input.weapon===0?0:-1,angles:[clamp(finite(input.angles?.[0]),-85,85),((finite(input.angles?.[1])%360)+360)%360,0]};
+  return {forward:clamp(finite(input.forward),-1,1),side:clamp(finite(input.side),-1,1),jump:!!input.jump,sprint:!!input.sprint,fire:!!input.fire,secondary:!!input.secondary,firePresses:Number.isInteger(input.firePresses)?clamp(input.firePresses,0,8):null,altPresses:Number.isInteger(input.altPresses)?clamp(input.altPresses,0,8):null,toggleMode:!!input.toggleMode,aim:!!input.aim,ability:!!input.ability,interact:!!input.interact,weapon:input.weapon===1?1:input.weapon===0?0:-1,angles:[clamp(finite(input.angles?.[0]),-85,85),((finite(input.angles?.[1])%360)+360)%360,0]};
 }
 export class Simulation {
   constructor(map,nav,seed=0xB10A7001) {
     this.map=map;this.world=Object.assign(new World(),map.world,{movers:map.gates.map(g=>({...g})),stamp:new Int32Array(map.world.stamp.length),curStamp:1});this.nav=nav;this.seed=seed>>>0;this.rng=new Random(seed);
     this.tick=0;this.status='playing';this.nextId=1;this.stage=0;this.relays=[false,false];this.wave=0;this.waveAt=0;
     this.interactTicks=0;this.interactId='';this.enemies=[];this.projectiles=[];this.events=[];
-    this.stats={shots:0,hits:0,kills:0,damageTaken:0,stuns:0,activations:0};this.lastAbility=false;
-    this.player=this.actor(SPAWN,240);Object.assign(this.player,{id:0,health:125,maxHealth:125,angles:[0,0,0],ammo:[220,20],weapon:0,nextFire:0,lastFire:-100,lastWeapon:0,unlocked:false,charge:0,abilityUntil:0,abilityReady:0,aiming:false});
+    this.stats={shots:0,hits:0,kills:0,damageTaken:0,stuns:0,activations:0};this.lastAbility=false;this.lastFireHeld=false;this.lastAltHeld=false;this.lastMode=false;
+    this.player=this.actor(SPAWN,240);Object.assign(this.player,{id:0,health:125,maxHealth:125,angles:[0,0,0],ammo:[120,0,0],hasRifle:false,rifleAuto:true,weapon:0,nextFire:0,nextGrenade:0,lastAlt:false,lastFire:-100,lastWeapon:0,unlocked:false,charge:0,abilityUntil:0,abilityReady:0,aiming:false});
     this.supplies=SUPPLIES.map((origin,id)=>({id,origin:origin.slice(),used:false}));
     this.spawnEncounter(0);
   }
@@ -45,31 +45,32 @@ export class Simulation {
     else {target.awake=true;if(owner==='player'){this.stats.hits++;this.player.charge=Math.min(100,this.player.charge+Math.min(8,amount/4));this.emit('hit',{origin:target.origin.slice(),amount});}}
     if(target.health===0){target.dead=true;target.state='dead';target.deathTick=this.tick;target.windup=0;
       if(target===this.player){this.status='defeat';this.emit('defeat');}
-      else {this.stats.kills++;this.player.charge=Math.min(100,this.player.charge+20);this.player.ammo[0]=Math.min(300,this.player.ammo[0]+8);this.emit('kill',{origin:target.origin.slice(),kind:target.kind});}
+      else {this.stats.kills++;this.player.charge=Math.min(100,this.player.charge+20);const slot=this.player.hasRifle?1:0;this.player.ammo[slot]=Math.min(300,this.player.ammo[slot]+8);this.emit('kill',{origin:target.origin.slice(),kind:target.kind});}
     }
   }
   step(raw={}) {
     if(this.status!=='playing')return;
     this.events.length=0;const input=normalizeInput(raw);this.tick++;
     const p=this.player;p.prevOrigin=p.origin.slice();p.angles=input.angles;p.aiming=input.aim;
-    if(input.weapon>=0)p.weapon=input.weapon;
+    if(input.weapon===0||(input.weapon===1&&p.hasRifle))p.weapon=input.weapon;
     p.speed=input.aim?145:input.sprint?310:240;
     playerMove(p,{forward:input.forward*p.speed,side:input.side*p.speed,up:0,jump:input.jump,angles:p.angles},TICK);
     if(input.ability&&!this.lastAbility)activateAbility(this);this.lastAbility=input.ability;
-    if(input.fire||input.secondary){if(fireWeapon(this,input.secondary?1:p.weapon))for(const e of this.enemies)e.heardShot=this.tick;}
+    updateWeapons(this,input);
     updateEnemies(this);
     updateProjectiles(this);
     if(this.status!=='playing')return;
-    for(const s of this.supplies)if(!s.used&&v3.dist(s.origin,p.origin)<46&&(p.health<p.maxHealth||p.ammo[0]<220||p.ammo[1]<20)) {
-      s.used=true;p.health=Math.min(p.maxHealth,p.health+55);p.ammo[0]=Math.min(300,p.ammo[0]+90);p.ammo[1]=Math.min(40,p.ammo[1]+8);this.emit('supply');
+    if(!p.hasRifle&&this.stage>=1&&v3.dist(p.origin,RIFLE_PICKUP)<55){p.hasRifle=true;p.weapon=1;p.ammo[1]=180;p.ammo[2]=8;this.emit('weaponPickup',{text:'DEPENDENCY REMOVER ACQUIRED / B: SEMI-AUTO / RMB: 40mm'});}
+    for(const s of this.supplies)if(!s.used&&v3.dist(s.origin,p.origin)<46&&(p.health<p.maxHealth||p.ammo[0]<120||(p.hasRifle&&(p.ammo[1]<180||p.ammo[2]<8)))) {
+      s.used=true;p.health=Math.min(p.maxHealth,p.health+55);p.ammo[0]=Math.min(300,p.ammo[0]+90);if(p.hasRifle){p.ammo[1]=Math.min(300,p.ammo[1]+90);p.ammo[2]=Math.min(20,p.ammo[2]+4);}this.emit('supply');
     }
     updateObjectives(this,input);
     this.world.movers.forEach((gate,i)=>gate.solid=this.stage<[3,4,6][i]);
   }
   snapshot() {
     const actor=a=>({id:a.id,origin:a.origin,velocity:a.velocity,angles:a.angles,health:a.health,dead:a.dead,onGround:a.onGround,jumpHeld:a.jumpHeld,waterLevel:a.waterLevel,waterType:a.waterType});
-    return {version:1,seed:this.seed,rng:this.rng.state,tick:this.tick,nextId:this.nextId,status:this.status,stage:this.stage,relays:this.relays,wave:this.wave,waveAt:this.waveAt,interactTicks:this.interactTicks,interactId:this.interactId,lastAbility:this.lastAbility,
-      player:{...actor(this.player),ammo:this.player.ammo,weapon:this.player.weapon,nextFire:this.player.nextFire,lastFire:this.player.lastFire,lastWeapon:this.player.lastWeapon,unlocked:this.player.unlocked,charge:this.player.charge,abilityUntil:this.player.abilityUntil,abilityReady:this.player.abilityReady,aiming:this.player.aiming},
+    return {version:2,seed:this.seed,rng:this.rng.state,tick:this.tick,nextId:this.nextId,status:this.status,stage:this.stage,relays:this.relays,wave:this.wave,waveAt:this.waveAt,interactTicks:this.interactTicks,interactId:this.interactId,lastAbility:this.lastAbility,lastFireHeld:this.lastFireHeld,lastAltHeld:this.lastAltHeld,lastMode:this.lastMode,
+      player:{...actor(this.player),ammo:this.player.ammo,hasRifle:this.player.hasRifle,rifleAuto:this.player.rifleAuto,nextGrenade:this.player.nextGrenade,lastAlt:this.player.lastAlt,weapon:this.player.weapon,nextFire:this.player.nextFire,lastFire:this.player.lastFire,lastWeapon:this.player.lastWeapon,unlocked:this.player.unlocked,charge:this.player.charge,abilityUntil:this.player.abilityUntil,abilityReady:this.player.abilityReady,aiming:this.player.aiming},
       enemies:this.enemies.map(e=>({...actor(e),kind:e.kind,state:e.state,awake:e.awake,windup:e.windup,nextAttack:e.nextAttack,stunUntil:e.stunUntil,immuneUntil:e.immuneUntil,nextPath:e.nextPath,path:e.path,pathIndex:e.pathIndex,heardShot:e.heardShot,deathTick:e.deathTick,lastDamage:e.lastDamage})),
       projectiles:this.projectiles.map(p=>({...p,prevOrigin:undefined})),supplies:this.supplies.map(s=>s.used),stats:this.stats};
   }

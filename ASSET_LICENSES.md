@@ -9,7 +9,7 @@ Verified against each official pack page and its actual downloadable `License.tx
 | Pack / author | Selected original | Runtime asset | Usage |
 |---|---|---|---|
 | [Ultimate Guns / Quaternius](https://quaternius.com/packs/ultimategun.html) | `AssaultRifle_1.obj` + `.mtl` | `rifle.mdl`, `.pal`, `.json` | Dependency Remover, first-person and held enemy weapon |
-| Same gun pack | `Shotgun_4.obj` + `.mtl` | `cannon.mdl`, `.pal`, `.json` | Fictional explosive Refactor Cannon, first-person and held enemy weapon |
+| Same gun pack | `Shotgun_4.obj` + `.mtl` | `cannon.mdl`, `.pal`, `.json` | Held enemy weapon (legacy internal asset name retained) |
 | [Ultimate Modular Men / Quaternius](https://quaternius.com/packs/ultimatemodularcharacters.html) | `Swat.gltf` | `harvester.mdl`, `.pal`, `.json` | Telemetry Harvester, animated |
 | [Ultimate Modular Women / Quaternius](https://quaternius.com/packs/ultimatemodularwomen.html) | `Suit.gltf`, local input name `SuitWoman.gltf` | `manager.mdl`, `.pal`, `.json` | Middleware Manager, animated |
 
@@ -38,3 +38,7 @@ Factory brush geometry, signage, interface, effect textures, pickup geometry and
 ## Receipts
 
 [assets/manifest.json](assets/manifest.json) records original authors, exact public source links, original input sizes/SHA-256 values, converted/runtime sizes/SHA-256 values and conversion notes. [assets/sources.json](assets/sources.json) records aliases. `node tools/check.mjs` verifies the retained assets against this manifest. Full model and texture loading is additionally checked in a browser; a missing required asset aborts startup visibly.
+
+## Original weapon geometry
+
+The PATCH-9 pistol, under-barrel launcher attachment and 40mm projectile are original lightweight brush meshes built in `src/main.js`, licensed with the game under Apache-2.0. No new third-party assets are required. The existing Quaternius assault rifle remains the fictional Dependency Remover; the converted shotgun model is retained for enemy-held equipment, not as a third selectable player weapon.

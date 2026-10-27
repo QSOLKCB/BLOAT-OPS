@@ -10,6 +10,7 @@ export const ZONES = [
   { name: 'EXTRACTION', from: 3500, to: 4120, half: 300, height: 240 },
 ];
 export const SPAWN = [170, 0, 25];
+export const RIFLE_PICKUP = [1180,0,25];
 export const POWERUP = [1280, 280, 40];
 export const RELAYS = [[1950, 270, 48], [2150, -270, 48]];
 export const CORE = [3180, 0, 55];
@@ -83,7 +84,7 @@ export function buildLevel() {
   world.finalize();
   const map = { world, lights, signs, ambient:[.19,.20,.22], gates:[1550,2350,3500].map(x=>({origin:[x,0,0],brushes:[boxBrush([-10,-88,0],[10,88,160],'steel')],solid:true})), spawn:SPAWN, zones:ZONES };
   // Level definitions are checked in Node as well as at startup.
-  for(const p of [SPAWN,...SUPPLIES,...ENCOUNTERS.flat().map(e=>[e[1],e[2],25])]) {
+  for(const p of [SPAWN,RIFLE_PICKUP,...SUPPLIES,...ENCOUNTERS.flat().map(e=>[e[1],e[2],25])]) {
     if(world.trace(p,p,PL_MINS,PL_MAXS,MASK_PLAYER).startsolid) throw new Error('Invalid spawn: '+p);
   }
   return map;
