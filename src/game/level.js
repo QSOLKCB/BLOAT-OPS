@@ -33,13 +33,17 @@ export function buildLevel() {
   const world = new World(), lights = [], signs = [];
   const box = (a, b, t = 'concrete', opts = {}) => world.add(boxBrush(a, b, t, undefined, opts));
   const light = (p, color = [1, .66, .3], radius = 420, intensity = .85) => lights.push({ origin: p, color, radius, intensity });
-  for (const z of ZONES) {
+  for (const [index,z] of ZONES.entries()) {
     const {from:a,to:b,half:w,height:h} = z;
     box([a,-w,-24],[b,w,0], 'floor');
     box([a,-w-24,0],[b,-w,h], 'wall'); box([a,w,0],[b,w+24,h], 'wall');
     box([a,-w,h],[b,w,h+20], 'ceiling');
-    // Portal partitions leave a clear 176-unit central route; upper beams frame each sector.
-    if (a) { box([a-12,-w,0],[a+12,-88,h]); box([a-12,88,0],[a+12,w,h]); box([a-12,-88,160],[a+12,88,h],'steel'); }
+    // Seal the union of adjoining room widths/heights, including the exposed
+    // shoulders when a room narrows. Only the central 176-unit portal is open.
+    if (index) {
+      const span=Math.max(w,ZONES[index-1].half),top=Math.max(h,ZONES[index-1].height);
+      box([a-12,-span,0],[a+12,-88,top]); box([a-12,88,0],[a+12,span,top]); box([a-12,-88,160],[a+12,88,top],'steel');
+    }
     for (let x=a+130; x<b-60; x+=260) {
       for (const side of [-1,1]) {
         const y=side*(w-8);

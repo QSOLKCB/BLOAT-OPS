@@ -8,7 +8,7 @@ Local verification completed 27 October 2026 (Australia/Adelaide). This document
 |---|---|---|
 | JavaScript syntax and model/texture integrity | Passed; all runtime models parse, frame/triangle counts match metadata and required textures load | [Static log](evidence/static-checks.txt) |
 | Asset provenance hashes | 30 retained asset/notice/source metadata files matched SHA-256 and size | [Manifest](../assets/manifest.json) |
-| Headless regressions | 18 passed, 0 failed | [Test log](evidence/simulation-tests.txt) |
+| Headless regressions | 19 passed, 0 failed | [Test log](evidence/simulation-tests.txt) |
 | Geometry and navigation | All mission/spawn positions valid, all objectives reachable, graph edges validated | Simulation tests; 174 static brushes, 704 navigation nodes, 4,582 edges |
 | Weapon behaviour | Rifle damage/cadence/ammo, cannon travel/splash/ammo, cover blocking and projectile cap passed | Simulation tests |
 | SHITPOSTER behaviour | Unlock, charge, interrupted attacks, frozen stun interval, recovery/firing, immunity, cooldown, distance/visibility and held-key checks passed | Simulation tests; browser rebound-key check |
@@ -16,10 +16,11 @@ Local verification completed 27 October 2026 (Australia/Adelaide). This document
 | Full mission without shortcuts | 2,588 input ticks; 27 kills; 3 activations; 4 stunned targets; 8 damage taken; victory | [Retained inputs](../tests/fixtures/mission-replay.json) |
 | HTTP browser | Passed under `/BLOAT-OPS/`; controls, settings, models, movement, firing, pause, rebound ability, replay, restart and defeat | [Browser report](evidence/browser.json) |
 | Offline browser | Passed via file launcher to standalone, with HTTP(S) blocked; same gameplay checks | Browser report; no external runtime requests |
+| Distribution notices | Full root NOTICE is embedded and its exact text is readable in Credits in both browser modes | Browser exact-text assertion |
 | Browser console/resources | Zero console errors, failed requests or missing resources in both modes; WebGL error 0 | Browser report |
-| Standalone build | 21 source modules embedded; 6,640,831-byte artifact tested | [Artifact receipt](evidence/standalone.json) |
+| Standalone build | 21 source modules embedded; 6,642,186-byte artifact tested | [Artifact receipt](evidence/standalone.json) |
 
-The initial movement test accidentally advanced the mission while trying to assert a closed gate; the fixture was corrected to remain at the firmware stage. Browser tests also caught and fixed initial pointer-lock camera movement, late pointer-lock capture over a terminal UI, and source `file:` module preloading before standalone redirection. These checks remain in the test suite.
+The initial movement test accidentally advanced the mission while trying to assert a closed gate; the fixture was corrected to remain at the firmware stage. Browser tests also caught and fixed initial pointer-lock camera movement, late pointer-lock capture over a terminal UI, and source `file:` module preloading before standalone redirection. These checks remain in the test suite. Codex review then identified missing standalone NOTICE content and exposed outer edges at narrowing sector transitions. Both were fixed: browser checks now compare Credits against the complete NOTICE, and a movement regression checks both shoulders at each narrowing transition with mission gates closed and open. The retained full-mission input stream and digest are unchanged.
 
 ## Reproducibility boundary
 
@@ -31,9 +32,9 @@ Node repeats the raw state exactly, as does Chromium when replayed twice. Node a
 
 Reported container CPU: **AMD EPYC 9V74 80-Core Processor**, Linux x64, 9 reported logical CPUs / 8 available to the process, 9.73 GiB reported memory. Shared virtual environment; no CPU pinning. Node **v24.22.1**. Local browser driver: Playwright **1.62.1** using the installed Chromium headless shell **134.0.6998.35**, ANGLE Vulkan **SwiftShader** software rendering. CI installs its own pinned Playwright 1.56.1 Chromium build on Ubuntu 24.04 and reruns the suite.
 
-Five measured headless runs after one warm-up replayed all 2,588 ticks. Mean simulation step cost ranged from **0.0226–0.0322 ms**; per-run p95 ranged from **0.0458–0.0708 ms**. Startup geometry/navigation measured **197 ms** in that shared-container sample. [Raw measurements](evidence/performance.json) include maxima and all runs. These are headless simulation figures, not browser frame-rate claims.
+Five measured headless runs after one warm-up replayed all 2,588 ticks. Mean simulation step cost ranged from **0.0153–0.0209 ms**; per-run p95 ranged from **0.0407–0.0584 ms**. Startup geometry/navigation measured **87 ms** in that shared-container sample. [Raw measurements](evidence/performance.json) include maxima and all runs. These are headless simulation figures, not browser frame-rate claims.
 
-For the browser, 90 deterministic renders of the four-enemy ambush at **1440×900**, including HUD and `gl.finish()`, measured mean render-call costs of **1.88 ms** over HTTP and **2.00 ms** offline. Per-mode p95 values were **0.40 ms** and **2.20 ms**, respectively; one-time costs can raise the mean above the p95 in a small sample. These are bounded render-call measurements, not end-to-end display FPS or native-GPU certification. Startup to ready was **639 ms** HTTP and **763 ms** offline in this sample. All raw values and renderer strings are retained in the browser report.
+For the browser, 90 deterministic renders of the four-enemy ambush at **1440×900**, including HUD and `gl.finish()`, measured mean render-call costs of **1.46 ms** over HTTP and **1.61 ms** offline. Per-mode p95 values were **4.70 ms** and **0.50 ms**, respectively; one-time costs can raise the mean above the p95 in a small sample. These are bounded render-call measurements, not end-to-end display FPS or native-GPU certification. Startup to ready was **791 ms** HTTP and **627 ms** offline in this sample. All raw values and renderer strings are retained in the browser report.
 
 ## Implemented scope and limits
 

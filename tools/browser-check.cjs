@@ -14,6 +14,11 @@ const root=path.resolve(__dirname,'..'),fixture=JSON.parse(fs.readFileSync(path.
    assert.equal(await page.evaluate(()=>bloat.assets.models.size),4);
    if(name==='offline'){assert(page.url().endsWith('/dist/BLOAT-OPS-standalone.html'));assert(!requests.some(u=>/^https?:/.test(u)));}
    await page.screenshot({path:path.join(root,'test-results',`${name}-menu.png`)});
+   // Every distribution exposes the complete adaptation NOTICE, including offline.
+   await page.getByRole('button',{name:'CREDITS +',exact:true}).click();
+   const notice=page.locator('#license-text details').filter({has:page.getByText('BLOAT-OPS — full attribution notice',{exact:true})});
+   await notice.waitFor();await notice.locator('summary').click();assert.equal(await notice.locator('pre').textContent(),fs.readFileSync(path.join(root,'NOTICE'),'utf8'));
+   await page.getByRole('button',{name:'RETURN ↗',exact:true}).click();
    // Settings persist and can reduce effects / rebind the defining ability.
    await page.getByRole('button',{name:'CONTROLS & SETTINGS'}).first().click();await page.locator('#ability-key').selectOption('KeyG');await page.locator('#reduced').check();await page.locator('#shake').uncheck();await page.locator('#volume').fill('0');await page.getByRole('button',{name:'SAVE & RETURN'}).click();
    await page.getByRole('button',{name:'BEGIN OPERATION'}).click();await page.waitForFunction(()=>bloat.screen==='playing');

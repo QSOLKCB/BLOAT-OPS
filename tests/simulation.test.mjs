@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {buildLevel,SPAWN,POWERUP,RELAYS,CORE,EXTRACT,ENCOUNTERS} from '../src/game/level.js';
+import {buildLevel,ZONES,SPAWN,POWERUP,RELAYS,CORE,EXTRACT,ENCOUNTERS} from '../src/game/level.js';
 import {NavMesh} from '../src/engine/nav.js';
 import {Simulation,FixedClock} from '../src/game/simulation.js';
 import {activateAbility,ABILITY} from '../src/game/ability.js';
@@ -40,3 +40,18 @@ test('interaction resets when released or moving away; core cannot be skipped',(
 test('same recorded per-tick inputs are independent of render batching',()=>{const cmds=Array.from({length:600},(_,i)=>({forward:i<200?1:0,side:i>200&&i<250?.5:0,fire:i>180,angles:[0,Math.sin(i/55)*10],weapon:i>320?1:0}));const a=make(),b=make();for(const cmd of cmds)a.step(cmd);const clock=new FixedClock();let n=0;while(n<cmds.length)clock.advance([1/30,1/60,1/120,1/40][n%4],()=>{if(n<cmds.length)b.step(cmds[n++]);});assert.equal(a.digest(),b.digest());assert.deepEqual(a.snapshot(),b.snapshot());});
 test('cosmetic rendering/randomness cannot affect simulation; global random is forbidden during steps',()=>{const old=Math.random;Math.random=()=>{throw new Error('unseeded random');};try{const a=make();ticks(a,300,{forward:1,fire:true});assert.equal(a.tick,300);}finally{Math.random=old;}});
 test('simulation instances have independent collision stamps and gate states',()=>{const a=make(),b=make();a.stage=6;a.enemies=[];a.step();assert(!a.world.movers[0].solid);assert(b.world.movers[0].solid);for(let i=0;i<50;i++){assert.equal(a.world.trace([1500,0,50],[1600,0,50]).fraction,1);assert(b.world.trace([1500,0,50],[1600,0,50]).fraction<1);}});
+
+test('narrowing sector shoulders contain the player with mission gates closed or open',()=>{
+ for(let i=1;i<ZONES.length;i++) {
+  const previous=ZONES[i-1],next=ZONES[i];if(previous.half<=next.half)continue;
+  for(const side of [-1,1])for(const stage of [1,6]) {
+   const g=make();g.enemies=[];g.stage=stage;
+   const start=[next.from-50,side*(previous.half+next.half)/2,25];
+   assert(!g.world.trace(start,start,g.player.mins,g.player.maxs).startsolid);
+   moveTo(g,start);ticks(g,180,{forward:1,angles:[0,0,0]});
+   assert(g.player.origin[0]<next.from-20,'shoulder blocks forward travel');
+   assert(g.player.origin[2]>=24,'player remains above the floor');
+   assert.equal(g.status,'playing');
+  }
+ }
+});

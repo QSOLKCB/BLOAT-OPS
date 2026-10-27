@@ -2,13 +2,13 @@
   {
     "mode": "http",
     "browser": "134.0.6998.35",
-    "loadMs": 639,
-    "requests": 42,
+    "loadMs": 791,
+    "requests": 46,
     "consoleErrors": [],
     "replayDigest": "72545eaf",
     "performance": {
-      "meanRenderMs": 1.8788888889054458,
-      "p95RenderMs": 0.3999999985098839,
+      "meanRenderMs": 1.4588888889385594,
+      "p95RenderMs": 4.699999995529652,
       "draws": 90,
       "viewport": [
         1440,
@@ -21,13 +21,13 @@
   {
     "mode": "offline",
     "browser": "134.0.6998.35",
-    "loadMs": 763,
+    "loadMs": 627,
     "requests": 3,
     "consoleErrors": [],
     "replayDigest": "72545eaf",
     "performance": {
-      "meanRenderMs": 1.9977777777446641,
-      "p95RenderMs": 2.2000000029802322,
+      "meanRenderMs": 1.613333333366447,
+      "p95RenderMs": 0.5,
       "draws": 90,
       "viewport": [
         1440,
