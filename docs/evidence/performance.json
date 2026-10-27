@@ -1,0 +1,52 @@
+{
+  "scope": "Headless complete-mission recorded input workload; no renderer or GPU measurements",
+  "node": "v24.22.1",
+  "platform": "linux",
+  "arch": "x64",
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "logicalCPUs": 9,
+  "availableParallelism": 8,
+  "memoryGiB": 9.733661651611328,
+  "brushes": 174,
+  "navNodes": 704,
+  "navEdges": 4582,
+  "startupMs": 196.994249,
+  "ticks": 2588,
+  "runs": [
+    {
+      "elapsedMs": 72.550319,
+      "meanTickMs": 0.028033353554868624,
+      "p95TickMs": 0.06408600000003162,
+      "maxTickMs": 3.690359000000001,
+      "digest": "72545eaf"
+    },
+    {
+      "elapsedMs": 83.31228499999997,
+      "meanTickMs": 0.03219176391035548,
+      "p95TickMs": 0.06165299999997842,
+      "maxTickMs": 4.409546999999975,
+      "digest": "72545eaf"
+    },
+    {
+      "elapsedMs": 58.59045200000003,
+      "meanTickMs": 0.02263927820710975,
+      "p95TickMs": 0.04577899999992496,
+      "maxTickMs": 8.449792000000002,
+      "digest": "72545eaf"
+    },
+    {
+      "elapsedMs": 81.56711600000006,
+      "meanTickMs": 0.031517432766615165,
+      "p95TickMs": 0.06706099999996695,
+      "maxTickMs": 10.13850100000002,
+      "digest": "72545eaf"
+    },
+    {
+      "elapsedMs": 64.26774899999998,
+      "meanTickMs": 0.024832978748068,
+      "p95TickMs": 0.0707559999999603,
+      "maxTickMs": 2.6521639999999707,
+      "digest": "72545eaf"
+    }
+  ]
+}

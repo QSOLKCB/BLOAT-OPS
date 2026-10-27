@@ -1,0 +1,49 @@
+{
+  "name": "manager",
+  "vertices": 13084,
+  "triangles": 6482,
+  "frames": 35,
+  "clips": {
+    "idle": {
+      "start": 0,
+      "count": 8,
+      "fps": 3.8400001464843805,
+      "loop": true,
+      "source": "Idle_Gun"
+    },
+    "move": {
+      "start": 8,
+      "count": 8,
+      "fps": 8.0,
+      "loop": true,
+      "source": "Run"
+    },
+    "attack": {
+      "start": 16,
+      "count": 5,
+      "fps": 6.666666666666667,
+      "loop": false,
+      "source": "Gun_Shoot"
+    },
+    "stun": {
+      "start": 21,
+      "count": 5,
+      "fps": 7.058823727406438,
+      "loop": false,
+      "source": "HitRecieve"
+    },
+    "death": {
+      "start": 26,
+      "count": 9,
+      "fps": 6.74999979883433,
+      "loop": false,
+      "source": "Death"
+    }
+  },
+  "winding": "CCW",
+  "position_quantization_units": [
+    0.2711046884149532,
+    0.19887703138782625,
+    0.23088185397829797
+  ]
+}

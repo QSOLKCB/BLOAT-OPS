@@ -1,0 +1,5 @@
+MODEL cannon.mdl 668 triangles 1 frames
+MODEL harvester.mdl 8794 triangles 35 frames
+MODEL manager.mdl 6482 triangles 35 frames
+MODEL rifle.mdl 1256 triangles 1 frames
+PASS 30 JavaScript syntax checks; 30 asset hashes verified.

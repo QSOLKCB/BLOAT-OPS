@@ -1,0 +1,40 @@
+[
+  {
+    "mode": "http",
+    "browser": "134.0.6998.35",
+    "loadMs": 639,
+    "requests": 42,
+    "consoleErrors": [],
+    "replayDigest": "72545eaf",
+    "performance": {
+      "meanRenderMs": 1.8788888889054458,
+      "p95RenderMs": 0.3999999985098839,
+      "draws": 90,
+      "viewport": [
+        1440,
+        900
+      ],
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "gl": 0
+    }
+  },
+  {
+    "mode": "offline",
+    "browser": "134.0.6998.35",
+    "loadMs": 763,
+    "requests": 3,
+    "consoleErrors": [],
+    "replayDigest": "72545eaf",
+    "performance": {
+      "meanRenderMs": 1.9977777777446641,
+      "p95RenderMs": 2.2000000029802322,
+      "draws": 90,
+      "viewport": [
+        1440,
+        900
+      ],
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "gl": 0
+    }
+  }
+]

@@ -1,0 +1,56 @@
+{
+  "upstream": {
+    "repository": "https://github.com/QSOLKCB/QwakeTF",
+    "commit": "a1f7dbbd2dc34bb29b179042eb22cfe4bd411815",
+    "license": "Apache-2.0"
+  },
+  "textures": {
+    "concrete": "t_wall2a",
+    "floor": "treadplatemetal",
+    "wall": "t_wall1a",
+    "ceiling": "t_metalsheeta",
+    "steel": "met_gry_flat",
+    "server": "comp1_1",
+    "hazard": "t_trim1a"
+  },
+  "models": [
+    {
+      "name": "Shotgun_4.obj",
+      "url": "https://drive.google.com/file/d/1RmtFVZxcC_lgXpnsXkoCWcKY8AN1y_yj/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0"
+    },
+    {
+      "name": "Shotgun_4.mtl",
+      "url": "https://drive.google.com/file/d/1x6_lsMkFiuQf0TCadXXty2gMdcmczuem/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0"
+    },
+    {
+      "name": "AssaultRifle_1.obj",
+      "url": "https://drive.google.com/file/d/1CyEzGioyY2r7SENNA5xokzeAzj67pYn_/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0"
+    },
+    {
+      "name": "AssaultRifle_1.mtl",
+      "url": "https://drive.google.com/file/d/1q0oAOdZb2ocANLbZ6hwJdqRDt7YOoENV/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0"
+    },
+    {
+      "name": "Swat.gltf",
+      "original_name": "Swat.gltf",
+      "url": "https://drive.google.com/file/d/1VGmU5f8a43NBT22JWB507NDSLbmNxzF9/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0"
+    },
+    {
+      "name": "SuitWoman.gltf",
+      "original_name": "Suit.gltf",
+      "url": "https://drive.google.com/file/d/1GjWtofxjmPku25cXJxHrzLLeUbXw7A_s/view?usp=drivesdk",
+      "author": "Quaternius",
+      "license": "CC0-1.0"
+    }
+  ]
+}

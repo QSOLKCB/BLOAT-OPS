@@ -1,0 +1,72 @@
+{
+  "upstream": {
+    "repository": "https://github.com/QSOLKCB/QwakeTF",
+    "commit": "a1f7dbbd2dc34bb29b179042eb22cfe4bd411815",
+    "license": "Apache-2.0"
+  },
+  "files": [
+    {
+      "path": "src/engine/audio.js",
+      "upstream_path": "src/audio.js",
+      "upstream_sha256": "94d4e4ccc65a1b5badbcf6827dece5888e939a14cd4cc32b66f8e6af1a537b88",
+      "import_sha256": "8b144261a422014fab8feed86721e7413c65a763da6b07eeb6a8058444f1475a",
+      "modified": true
+    },
+    {
+      "path": "src/engine/defs.js",
+      "upstream_path": "src/defs.js",
+      "upstream_sha256": "aa6cecdb58bb7f49fd7aa314b1f3261f9184bb228d04a55f57683cb5bef33bfb",
+      "import_sha256": "6344121b3097e8b5fa8c1ddb821175745cbe15b48e1506637ebfeac8440001cf",
+      "modified": true
+    },
+    {
+      "path": "src/engine/formats.js",
+      "upstream_path": "src/formats.js",
+      "upstream_sha256": "5f7c6af5e18844b104b7219e9dba8c12eebc623f5bf343402bfb38661b39f2ed",
+      "import_sha256": "5f7c6af5e18844b104b7219e9dba8c12eebc623f5bf343402bfb38661b39f2ed",
+      "modified": false
+    },
+    {
+      "path": "src/engine/lightmap.js",
+      "upstream_path": "src/lightmap.js",
+      "upstream_sha256": "da49a511da4a746b633868bbeb0e09a96d1b438dbfc4b3c34c30e0abdbf6ae48",
+      "import_sha256": "da49a511da4a746b633868bbeb0e09a96d1b438dbfc4b3c34c30e0abdbf6ae48",
+      "modified": false
+    },
+    {
+      "path": "src/engine/math.js",
+      "upstream_path": "src/math.js",
+      "upstream_sha256": "86f684636f86c4324b1bda62db9e6751060ba3398db1acbcebfd6d0bc8ec2410",
+      "import_sha256": "43f5dce8778507d9d2475be70117280c76116a33d3abef5e385fd4e5424a078c",
+      "modified": true
+    },
+    {
+      "path": "src/engine/nav.js",
+      "upstream_path": "src/nav.js",
+      "upstream_sha256": "29f4b5a439c05ca676be4068fb7d2aa624eb551a9deb01b42540aa4c3e8393df",
+      "import_sha256": "f814e02753c19c057bd9169a40a81882cbd49005d0de2969ded6aa8753e2be0a",
+      "modified": true
+    },
+    {
+      "path": "src/engine/pmove.js",
+      "upstream_path": "src/pmove.js",
+      "upstream_sha256": "cd01820ce918bcf08177691702d49d919992341bf7075a06d8f108ef414da846",
+      "import_sha256": "cd01820ce918bcf08177691702d49d919992341bf7075a06d8f108ef414da846",
+      "modified": false
+    },
+    {
+      "path": "src/engine/renderer.js",
+      "upstream_path": "src/renderer.js",
+      "upstream_sha256": "56c026718ea624eaf4874956c24e1628b95805f36ff859550cdddf4b5665d922",
+      "import_sha256": "a957202b0618c3bc88ba1c9a99e1608f488227dcd070057576a188fec26a58e0",
+      "modified": true
+    },
+    {
+      "path": "src/engine/world.js",
+      "upstream_path": "src/world.js",
+      "upstream_sha256": "81accea2aa105534cfe37e1757dba5e1c508bb7298a58fcf36b32d590bf12d18",
+      "import_sha256": "81accea2aa105534cfe37e1757dba5e1c508bb7298a58fcf36b32d590bf12d18",
+      "modified": false
+    }
+  ]
+}
