@@ -38,7 +38,12 @@ const root=path.resolve(__dirname,'..'),fixture=JSON.parse(fs.readFileSync(path.
    assert.equal(perf.gl,0);
    // Allow bounded extra time for CI capture; other actions retain the 20s default.
    const captureStarted=Date.now();console.log(`CAPTURE ${name} combat screenshot (timeout 60000ms)`);
-   await page.screenshot({path:path.join(root,'test-results',`${name}-combat.png`),timeout:60000});
+   try {
+     await page.screenshot({path:path.join(root,'test-results',`${name}-combat.png`),timeout:60000});
+   } catch(error) {
+     console.error(`CAPTURE FAILED ${name} combat screenshot after ${Date.now()-captureStarted}ms`);
+     throw error;
+   }
    console.log(`CAPTURED ${name} combat screenshot in ${Date.now()-captureStarted}ms`);
    assert.deepEqual(errors,[],`${name} console/resources`);assert(!requests.some(u=>/^https?:/.test(u)&&!u.startsWith(`http://127.0.0.1:${server.address().port}/`)),'No external runtime requests');
    report.push({mode:name,browser:await browser.version(),loadMs,requests:requests.length,consoleErrors:errors,replayDigest:replay.digest,performance:perf});console.log('PASS',name,JSON.stringify(report.at(-1)));await page.close();
