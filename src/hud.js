@@ -3,7 +3,7 @@ import {WEAPONS} from './game/weapons.js';
 import {ENEMIES} from './game/enemies.js';
 import {ABILITY} from './game/ability.js';
 import {OBJECTIVES,objectiveTarget,interactTarget} from './game/objectives.js';
-import {ZONES} from './game/level.js';
+import {ZONES,RIFLE_PICKUP} from './game/level.js';
 const AMBER='#eda344',PAPER='#e9e4db';
 export class HUD {
   constructor(app,canvas){this.app=app;this.canvas=canvas;this.ctx=canvas.getContext('2d');}
@@ -29,14 +29,15 @@ export class HUD {
     const cx=w/2,cy=h/2;c.strokeStyle=PAPER;c.lineWidth=1.5;c.beginPath();for(const [x,y,dx,dy]of [[-10,0,-4,0],[4,0,10,0],[0,-10,0,-4],[0,4,0,10]]){c.moveTo(cx+x,cy+y);c.lineTo(cx+dx,cy+dy);}c.stroke();
     if(a.hitUntil>t){c.strokeStyle=AMBER;c.beginPath();for(const s of [-1,1])for(const q of [-1,1]){c.moveTo(cx+s*13,cy+q*13);c.lineTo(cx+s*19,cy+q*19);}c.stroke();}
     const bottom=h-100;panel(margin,bottom,165,66);text('OPERATOR INTEGRITY',margin+15,bottom+17,9,'#aaa99e');text(String(Math.ceil(p.health)).padStart(3,'0'),margin+14,bottom+50,32,p.health<35?'#ef705b':PAPER);text('/ 125',margin+94,bottom+47,11,'#aaa99e');
-    panel(w-margin-220,bottom,220,66);text(WEAPONS[p.weapon].short,w-margin-203,bottom+18,10,AMBER);text(String(p.ammo[p.weapon]).padStart(3,'0'),w-margin-203,bottom+50,30);text(p.weapon?'SHELLS / 02':'ROUNDS / 01',w-margin-127,bottom+47,10,'#aaa99e');
+    panel(w-margin-220,bottom,220,66);text(p.weapon?WEAPONS[1].short+' / '+(p.rifleAuto?'AUTO':'SEMI'):WEAPONS[0].short,w-margin-203,bottom+18,10,AMBER);text(String(p.ammo[p.weapon]).padStart(3,'0'),w-margin-203,bottom+50,30);text(p.weapon?'40mm: '+p.ammo[2]:'ROUNDS / 01',w-margin-127,bottom+47,10,'#aaa99e');
     const bw=Math.min(310,w-465),bx=w/2-bw/2,by=h-83;
     if(bw>100){const cooldown=Math.max(0,(p.abilityReady-g.tick)/60);text(p.unlocked?'SHITPOSTER MODE':'SHITPOSTER / FIRMWARE REQUIRED',w/2,by-10,10,AMBER,'center');c.fillStyle='#222726';c.fillRect(bx,by,bw,7);c.fillStyle=AMBER;c.fillRect(bx,by,bw*p.charge/100,7);text(!p.unlocked?'RECOVER THE FIRMWARE':cooldown>0?'COOLDOWN '+cooldown.toFixed(1)+'s':p.charge>=100?'['+a.settings.abilityKey.slice(3)+'] READY TO DISRUPT':Math.floor(p.charge)+' / 100 CHARGE',w/2,by+27,10,PAPER,'center');}
-    text('WASD MOVE  /  LMB FIRE  /  RMB CANNON  /  E INTERACT',margin,h-15,w<800?8:9,'#c3bfb1');text(Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')+'  |  '+g.stats.kills+' REMOVED',w-margin,h-15,10,AMBER,'right');
+    text('WASD MOVE  /  LMB FIRE  /  RMB 40mm / B MODE  /  E INTERACT',margin,h-15,w<800?8:9,'#c3bfb1');text(Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')+'  |  '+g.stats.kills+' REMOVED',w-margin,h-15,10,AMBER,'right');
     const interact=interactTarget(g);
     if(interact){text('HOLD [E] TO '+(interact.kind==='core'?'SHUT DOWN BLOAT CORE':'ISOLATE RELAY'),cx,cy+75,12,AMBER,'center');c.fillStyle='#121818';c.fillRect(cx-90,cy+86,180,5);c.fillStyle=AMBER;c.fillRect(cx-90,cy+86,180*g.interactTicks/120,5);}
-    else if(g.tick<360)text('MOVE THROUGH THE BAY. YOUR WEAPONS ARE ALREADY LOADED.',cx,h-145,11,AMBER,'center');
+    else if(g.tick<360&&!p.hasRifle)text('MOVE THROUGH THE BAY. PISTOL READY. CLICK ONCE PER SHOT.',cx,h-145,11,AMBER,'center');
     if(a.toast&&a.toast.until>t){const str=a.toast.text;c.fillStyle='rgba(10,13,14,.85)';const tw=Math.min(w-40,str.length*7+38);c.fillRect(cx-tw/2,h-190,tw,35);text(str,cx,h-168,w<900?9:11,AMBER,'center');}
+    if(!p.hasRifle&&g.stage>=1){const xy=a.project(v3.add(RIFLE_PICKUP,[0,0,42]));if(xy)text('DEPENDENCY REMOVER / PICK UP',xy[0],xy[1],11,AMBER,'center');}
     // Labels are projected above real actors and occluded by world geometry.
     for(const e of g.enemies){if(e.dead||v3.dist(p.origin,e.origin)>800||!g.world.lineClear(a.eye,g.eye(e)))continue;const xy=a.project(v3.add(e.origin,[0,0,47]));if(!xy)continue;const stunned=g.tick<e.stunUntil;const label=stunned?'PROCESS SUSPENDED':ENEMIES[e.kind].name;text(label,xy[0],xy[1],9,stunned?AMBER:'#ddd8c8','center');c.fillStyle='#201f19';c.fillRect(xy[0]-29,xy[1]+6,58,3);c.fillStyle=stunned?AMBER:'#bc5445';c.fillRect(xy[0]-29,xy[1]+6,58*e.health/e.maxHealth,3);}
     for(const l of a.fx.labels){const xy=a.project(v3.add(l.origin,[0,0,62+(2-l.life)*20]));if(xy)text(l.text,xy[0],xy[1],11,AMBER,'center');}

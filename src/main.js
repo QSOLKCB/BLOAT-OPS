@@ -9,7 +9,7 @@ import {Assets} from './assets.js';
 import {Sound} from './sound.js';
 import {Effects} from './effects.js';
 import {HUD} from './hud.js';
-import {buildLevel,POWERUP,RELAYS,CORE,EXTRACT} from './game/level.js';
+import {buildLevel,RIFLE_PICKUP,POWERUP,RELAYS,CORE,EXTRACT} from './game/level.js';
 import {Simulation,FixedClock} from './game/simulation.js';
 import {WEAPONS} from './game/weapons.js';
 import {ENEMIES} from './game/enemies.js';
@@ -37,6 +37,9 @@ export class App {
     this.pickup=model([[[-14,-14,-10],[14,14,10],'steel'],[[-15,-5,-2],[15,5,3],'health_fbr']]);
     this.firmware=model([[[-13,-13,-13],[13,13,13],'amber_fbr'],[[-19,-19,-18],[19,19,-13],'steel']]);
     this.terminal=model([[[-22,-16,0],[22,16,12],'terminal_fbr']]);
+    this.pistol=model([[[0,-1.6,0],[12,1.6,2.5],'gunmetal_fbr'],[[0,-1.4,-7],[3,1.4,0],'grip_fbr'],[[3,-.6,-3],[7,.6,-2],'gunmetal_fbr'],[[6,-.6,-2],[7,.6,0],'gunmetal_fbr'],[[12,-.9,.7],[15,.9,1.8],'gunmetal_fbr'],[[10,-.3,2.5],[11,.3,3.2],'sight_fbr'],[[0,-1.6,2.5],[1,-.7,3.2],'gunmetal_fbr'],[[0,.7,2.5],[1,1.6,3.2],'gunmetal_fbr']]);
+    this.launcher=model([[[8,-1.7,-4.5],[20,1.7,-1.5],'grip_fbr'],[[20,-1.3,-4.1],[25,1.3,-1.9],'gunmetal_fbr'],[[8,-1.8,-4],[11,-1.7,-2],'amber_fbr']]);
+    this.grenade=model([[[-3,-2,-2],[3,2,2],'amber_fbr']]);
     this.bolt=model([[[-5,-3,-3],[5,3,3],'core_fbr']]);
     this.signs=this.map.signs.map(s=>{
       const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const c=canvas.getContext('2d');c.fillStyle='#242a29';c.fillRect(0,0,1024,256);c.fillStyle='#d79940';c.fillRect(0,0,12,256);c.font='bold 38px monospace';c.fillText(s.title,44,100);c.font='18px monospace';c.fillStyle='#b5b5a7';c.fillText(s.sub,44,155);c.fillStyle='#d79940';c.fillRect(44,193,170,7);
@@ -60,20 +63,20 @@ export class App {
   start(seed=this.sim?.seed??0xB10A7001){if(!this.ready)return;this.sim=new Simulation(this.map,this.nav,seed);this.angles=[0,0,0];this.fx=new Effects();this.recording=[];this.recordingTruncated=false;this.toast=null;this.hitUntil=this.damageUntil=0;this.weapon=-1;this.resume();}
   resume(){if(!this.sim||this.sim.status!=='playing')return;this.clearInput();this.clock.reset();this.show('playing');this.audio.start(this.settings.volume);this.audio.ambient(true);this.last=performance.now();const result=$('game').requestPointerLock?.();if(result?.catch)result.catch(()=>{this.toast={text:'CLICK THE VIEW TO CAPTURE THE MOUSE',until:this.sim.tick/60+5};});}
   pause(){if(this.screen!=='playing')return;this.show('pause');if(document.pointerLockElement)document.exitPointerLock();}
-  clearInput(){this.keys.clear();this.buttons.clear();this.abilityPressed=false;this.weapon=-1;}
+  clearInput(){this.keys.clear();this.buttons.clear();this.abilityPressed=false;this.modePressed=false;this.firePresses=0;this.altPresses=0;this.weapon=-1;}
   bindInput(){
-    window.addEventListener('keydown',e=>{if(['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&this.screen==='playing')e.preventDefault();if(e.code==='Escape'){if(this.screen==='playing')this.pause();return;}if(this.screen!=='playing')return;if(e.repeat)return;this.keys.add(e.code);if(e.code===this.settings.abilityKey)this.abilityPressed=true;if(e.code==='Digit1')this.weapon=0;if(e.code==='Digit2')this.weapon=1;if(e.code==='KeyP')this.settings.debug=!this.settings.debug;});
+    window.addEventListener('keydown',e=>{if(['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&this.screen==='playing')e.preventDefault();if(e.code==='Escape'){if(this.screen==='playing')this.pause();return;}if(this.screen!=='playing')return;if(e.repeat)return;this.keys.add(e.code);if(e.code===this.settings.abilityKey)this.abilityPressed=true;if(e.code==='Digit1')this.weapon=0;if(e.code==='Digit2')this.weapon=1;if(e.code==='KeyB')this.modePressed=true;if(e.code==='KeyP')this.settings.debug=!this.settings.debug;});
     window.addEventListener('keyup',e=>this.keys.delete(e.code));
     window.addEventListener('mousemove',e=>{if(this.screen==='playing'&&document.pointerLockElement===$('game')){if(this.ignoreMouse){this.ignoreMouse=false;return;}this.angles[1]-=e.movementX*this.settings.sensitivity*.035;this.angles[0]=clamp(this.angles[0]+e.movementY*this.settings.sensitivity*.035,-85,85);}});
-    $('game').addEventListener('mousedown',e=>{if(this.screen!=='playing')return;this.buttons.add(e.button);if(document.pointerLockElement!==$('game')){const p=$('game').requestPointerLock?.();p?.catch?.(()=>{});}});
+    $('game').addEventListener('mousedown',e=>{if(this.screen!=='playing')return;if(!this.buttons.has(e.button)){if(e.button===0)this.firePresses=Math.min(8,this.firePresses+1);if(e.button===2)this.altPresses=Math.min(8,this.altPresses+1);}this.buttons.add(e.button);if(document.pointerLockElement!==$('game')){const p=$('game').requestPointerLock?.();p?.catch?.(()=>{});}});
     window.addEventListener('mouseup',e=>this.buttons.delete(e.button));$('game').addEventListener('contextmenu',e=>e.preventDefault());
     $('game').addEventListener('wheel',e=>{if(this.screen==='playing'){e.preventDefault();this.weapon=1-this.sim.player.weapon;}},{passive:false});
     document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement){this.ignoreMouse=true;if(this.screen!=='playing'){document.exitPointerLock();return;}}if(!document.pointerLockElement&&this.screen==='playing')this.pause();});
     window.addEventListener('blur',()=>this.pause());document.addEventListener('visibilitychange',()=>{if(document.hidden)this.pause();});
   }
-  input(){const k=this.keys;return {forward:(k.has('KeyW')?1:0)-(k.has('KeyS')?1:0),side:(k.has('KeyD')?1:0)-(k.has('KeyA')?1:0),jump:k.has('Space'),sprint:k.has('ShiftLeft')||k.has('ShiftRight'),aim:k.has('KeyQ'),fire:this.buttons.has(0),secondary:this.buttons.has(2),ability:!!this.abilityPressed,interact:k.has('KeyE'),weapon:this.weapon,angles:this.angles.slice()};}
+  input(){const k=this.keys,firePresses=this.firePresses,altPresses=this.altPresses,toggleMode=this.modePressed;this.firePresses=this.altPresses=0;this.modePressed=false;return {firePresses,altPresses,toggleMode,forward:(k.has('KeyW')?1:0)-(k.has('KeyS')?1:0),side:(k.has('KeyD')?1:0)-(k.has('KeyA')?1:0),jump:k.has('Space'),sprint:k.has('ShiftLeft')||k.has('ShiftRight'),aim:k.has('KeyQ'),fire:this.buttons.has(0),secondary:this.buttons.has(2),ability:!!this.abilityPressed,interact:k.has('KeyE'),weapon:this.weapon,angles:this.angles.slice()};}
   consumeEvents(){const g=this.sim,t=g.tick/60;for(const e of g.events){
-    if(e.type==='shot'){this.audio.fx(e.weapon?'cannon':'rifle');this.fx.lines.push({a:e.origin,b:e.end,color:[1,.66,.23],life:.06});this.fx.burst(e.end,[.95,.66,.25],e.hit?6:3);}
+    if(e.type==='shot'){this.audio.fx(e.alt?'cannon':e.weapon?'rifle':'pistol');this.fx.lines.push({a:e.origin,b:e.end,color:[1,.66,.23],life:.06});this.fx.burst(e.end,[.95,.66,.25],e.hit?6:3);}
     if(e.type==='hit'){this.hitUntil=t+.12;this.audio.fx('hit',null,.3);}
     if(e.type==='explosion'){this.fx.burst(e.origin,[1,.45,.12],this.settings.reduced?12:50);this.audio.fx('explosion',e.origin);}
     if(e.type==='enemyShot')this.audio.fx('enemy',e.origin,.45);
@@ -81,7 +84,7 @@ export class App {
     if(e.type==='kill')this.fx.burst(e.origin,[.63,.5,.3],15);
     if(e.type==='ability'){this.audio.fx('ability');this.fx.pulse=1;this.fx.burst(e.origin,[1,.72,.25],this.settings.reduced?10:60);this.toast={text:e.count+' PROCESSES SUSPENDED. SKILL ISSUE DETECTED.',until:t+3};}
     if(e.type==='stun'){this.fx.labels.push({origin:e.origin,text:e.text,life:2});}
-    if(['objective','unlock','core'].includes(e.type)){this.toast={text:e.text,until:t+5};$('live-message').textContent=e.text;this.audio.fx('pickup');}
+    if(['objective','unlock','core','weaponPickup','mode'].includes(e.type)){this.toast={text:e.text,until:t+5};$('live-message').textContent=e.text;this.audio.fx('pickup');}
     if(e.type==='supply'){this.toast={text:'SUPPLIES RESTORED. NO SUBSCRIPTION REQUIRED.',until:t+2};this.audio.fx('pickup');}
     if(e.type==='victory'||e.type==='defeat')this.end();
   }}
@@ -95,7 +98,7 @@ export class App {
   render(time){const r=this.renderer,g=this.sim,p=g?.player;
     let angles,eye;
     if(!g){eye=[2510,-470,100];angles=vecToAngles(v3.sub([3190,120,78],eye));angles[1]+=Math.sin(time*.12)*5;}
-    else{eye=v3.add(v3.lerp(p.prevOrigin,p.origin,clamp(this.clock.accum*60,0,1)),[0,0,p.dead?0:22]);angles=this.angles.slice();if(this.settings.shake&&this.screen==='playing'){const speed=Math.hypot(p.velocity[0],p.velocity[1]);eye[2]+=Math.sin(g.tick*.15)*Math.min(1,speed/240)*1.1;const kick=Math.max(0,1-(g.tick-p.lastFire)/9);angles[0]-=kick*WEAPONS[p.lastWeapon].recoil;}}
+    else{eye=v3.add(v3.lerp(p.prevOrigin,p.origin,clamp(this.clock.accum*60,0,1)),[0,0,p.dead?0:22]);angles=this.angles.slice();if(this.settings.shake&&this.screen==='playing'){const speed=Math.hypot(p.velocity[0],p.velocity[1]);eye[2]+=Math.sin(g.tick*.15)*Math.min(1,speed/240)*1.1;const kick=Math.max(0,1-(g.tick-p.lastFire)/9);angles[0]-=kick*(p.lastAlt?3:WEAPONS[p.lastWeapon].recoil);}}
     this.eye=eye;r.dlights=[];
     if(g){for(const pr of g.projectiles.slice(0,6))r.dlights.push({origin:pr.origin,radius:150,color:pr.owner==='player'?[1,.6,.2]:[1,.22,.08]});if(g.tick<p.abilityUntil)r.dlights.push({origin:eye,radius:300,color:[.7,.45,.13]});}
     r.beginFrame(eye,angles,g&&p.aiming?65:this.settings.fov,time);r.drawWorld();
@@ -103,6 +106,7 @@ export class App {
     for(let i=0;i<this.gates.length;i++)if(!g||g.world.movers[i].solid)r.drawBrushModel(this.gates[i],this.map.gates[i].origin,[.55,.5,.4]);
     if(g){const t=g.tick/60,alpha=clamp(this.clock.accum*60,0,1);
       for(const s of g.supplies)if(!s.used)r.drawBrushModel(this.pickup,v3.add(s.origin,[0,0,Math.sin(t*2+s.id)*3]),[.9,1,.85],[0,t*25,0]);
+      if(!p.hasRifle)r.drawModel(this.assets.model('rifle'),0,0,0,m4.model(v3.add(RIFLE_PICKUP,[0,0,15]),[0,t*35,0],.65),'default',[1.3,1.1,.7]);
       if(!p.unlocked)r.drawBrushModel(this.firmware,POWERUP,[1,.9,.6],[0,t*35,0]);
       for(let i=0;i<2;i++)r.drawBrushModel(this.terminal,RELAYS[i],g.relays[i]?[.2,.35,.2]:[1,1,.7]);
       r.drawBrushModel(this.terminal,CORE,g.stage>=5?[.2,.25,.2]:[1,.8,.5]);
@@ -113,14 +117,14 @@ export class App {
         // Visible held weapon, kept lightweight and separate from skinned character animation.
         if(!e.dead){const f=angleVectors([0,e.angles[1],0]).forward;const gunPos=v3.add(v3.ma(o,9,f),[0,0,12]);r.drawModel(this.assets.model(e.kind==='harvester'?'rifle':'cannon'),0,0,0,m4.model(gunPos,[0,e.angles[1],0],.55),'default',[.9,.87,.8]);}
       }
-      for(const pr of g.projectiles)r.drawBrushModel(this.bolt,pr.origin,pr.owner==='player'?[1,.8,.3]:[1,.3,.1]);
+      for(const pr of g.projectiles)r.drawBrushModel(pr.gravity?this.grenade:this.bolt,pr.origin,pr.owner==='player'?[1,.8,.3]:[1,.3,.1]);
       this.fx.draw(r);
-      if(!p.dead){const {forward,right,up}=angleVectors(angles),kick=Math.max(0,1-(g.tick-p.lastFire)/10);let pos=v3.add(v3.ma(eye,12-kick*3,forward),v3.add(v3.scale(right,p.aiming?3:9),v3.scale(up,-10-kick)));r.beginViewModel();r.drawModel(this.assets.model(WEAPONS[p.weapon].model),0,0,0,m4.model(pos,[angles[0]+kick*3,angles[1],0],p.weapon?.40:.60),'default',[1.3,1.2,1.05]);r.endViewModel();}
+      if(!p.dead){const {forward,right,up}=angleVectors(angles),kick=Math.max(0,1-(g.tick-p.lastFire)/10);let pos=v3.add(v3.ma(eye,12-kick*3,forward),v3.add(v3.scale(right,p.aiming?3:9),v3.scale(up,-10-kick)));r.beginViewModel();if(p.weapon===0)r.drawBrushModel(this.pistol,v3.add(pos,v3.add(v3.scale(right,-3),v3.scale(up,3))),[1.3,1.2,1.05],[angles[0]+kick*3,angles[1],0]);else {r.drawModel(this.assets.model('rifle'),0,0,0,m4.model(pos,[angles[0]+kick*3,angles[1],0],.60),'default',[1.3,1.2,1.05]);r.drawBrushModel(this.launcher,pos,[1.1,1,.85],[angles[0]+kick*3,angles[1],0]);}r.endViewModel();}
       const basis=angleVectors(angles);this.audio.setListener(eye,basis.forward,basis.up);
     }
   }
   project(pos){const m=this.renderer.vp,x=pos[0],y=pos[1],z=pos[2],w=m[3]*x+m[7]*y+m[11]*z+m[15];if(w<=0)return null;const xx=(m[0]*x+m[4]*y+m[8]*z+m[12])/w,yy=(m[1]*x+m[5]*y+m[9]*z+m[13])/w;if(Math.abs(xx)>1.2||Math.abs(yy)>1.2)return null;return [(xx*.5+.5)*innerWidth,(-yy*.5+.5)*innerHeight];}
-  exportReplay(){return {version:1,seed:this.sim.seed,truncated:this.recordingTruncated,inputs:this.recording,digest:this.sim.digest()};}
+  exportReplay(){return {version:2,seed:this.sim.seed,truncated:this.recordingTruncated,inputs:this.recording,digest:this.sim.digest()};}
 }
 const app=new App();
 // Small inspectable debug surface, also exercised by browser regressions; no network access.

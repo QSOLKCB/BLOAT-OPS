@@ -14,7 +14,7 @@ export class Assets {
       const model=this.r.uploadModel(name,mdl,new Palette(pal));model.frontCCW=true;
       this.models.set(name,model);this.meta.set(name,meta);tick();
     }));
-    for(const [name,color] of Object.entries({amber_fbr:[188,112,28],lamp_fbr:[255,209,132],core_fbr:[205,59,27],terminal_fbr:[191,143,54],health_fbr:[157,196,154]}))this.textures.set(name,this.r.makeTexture(new Uint8Array([...color,255]),1,1,false));
+    for(const [name,color] of Object.entries({gunmetal_fbr:[78,84,88],grip_fbr:[28,31,33],sight_fbr:[210,188,130],amber_fbr:[188,112,28],lamp_fbr:[255,209,132],core_fbr:[205,59,27],terminal_fbr:[191,143,54],health_fbr:[157,196,154]}))this.textures.set(name,this.r.makeTexture(new Uint8Array([...color,255]),1,1,false));
   }
   tex(name){const t=this.textures.get(name);if(!t)throw new Error('Unknown texture '+name);return t;}
   model(name){return this.models.get(name);}

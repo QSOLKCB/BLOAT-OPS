@@ -13,11 +13,11 @@ QwakeTF's CTF rules, nine-class system, original map, bot roles, weapon inventor
 - `src/game/level.js`: five original industrial sectors, cover, lights, signs, gates, spawns, supply points and finite encounter definitions.
 - `simulation.js`: authoritative tick state, player physics, damage, supplies, terminal outcomes and snapshots.
 - `enemies.js`: two defined enemy roles, bounded navigation, attack wind-up, projectile firing, stun recovery and separation.
-- `weapons.js`: seeded rifle spread, swept hitscan/projectile collision, splash visibility and ammunition.
+- `weapons.js`: seeded pistol/rifle spread, swept hitscan/projectile collision, splash visibility and ammunition.
 - `ability.js`: charge/cost, 240-tick effect, 180-tick stun, 360-tick post-stun immunity and 900-tick cooldown.
 - `objectives.js`: ordered mission state machine, two-second interactions, three finite final waves, extraction.
 
-Every simulation tick is 1/60 second. The order is input normalization → tick increment/aim/weapon selection → player movement → ability activation → player weapon fire → enemies in stable ID order → projectiles in insertion order/damage → supplies → objectives → gate state. Dead players end the update before objective progression. Timers use integer ticks. Render frames feed an accumulator; long stalls are clamped to 250 ms (15 ticks), causing deliberate slow motion instead of an unbounded catch-up loop. Pausing/blur resets the accumulator and input state.
+Every simulation tick is 1/60 second. The order is input normalization → tick increment/aim/weapon selection → player movement → ability activation → player weapon fire → enemies in stable ID order → projectiles in insertion order/damage → weapon pickup/supplies → objectives → gate state. Dead players end the update before objective progression. Timers use integer ticks. Render frames feed an accumulator; long stalls are clamped to 250 ms (15 ticks), causing deliberate slow motion instead of an unbounded catch-up loop. Pausing/blur resets the accumulator and input state.
 
 Each simulation has independent collision visitation stamps and gate movers. Static geometry and navigation data can be reused. Render updates do not alter simulation state. Cosmetic particles use a separate seeded generator. The game layer does not call `Math.random`, `Date` or `performance`.
 
@@ -40,3 +40,7 @@ Limits: 32 live enemy objects, 96 projectiles, 600 cosmetic particles, 128 event
 ## Packaging
 
 The source is an ordinary static application with relative URLs. `tools/build.mjs` embeds modules/resources into one HTML file, constructing local Blob-module URLs. It does not transpile or use an external bundler. CI verifies both HTTP `/BLOAT-OPS/` play and the exact standalone output. Only tested main can enter the Pages deployment job after maintainer merge.
+
+## Weapon input revision
+
+The player begins with PATCH-9; rifle ownership is granted by the intake pickup after the initial encounter. Primary fire distinguishes held input from bounded press counts (0–8 per tick), preserving down/up events between rendered frames. `updateWeapons` owns edge inference for headless inputs, semi/auto selection and firing order (mode, primary, alternate). Semi-auto presses have no cadence delay; rifle automatic fire is tick-capped. Alternate fire requires the equipped rifle and consumes a separate reserve; projectile position uses constant-gravity integration and swept collision, with impact/fuse detonation. Snapshot version 2 records ownership, mode, trigger latches, grenade cooldown and gravity. The version-2 input fixture deliberately replaces the obsolete cannon/hold-fire recording; it is regenerated through normal input commands, never state overrides.
