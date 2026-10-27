@@ -113,9 +113,8 @@ export class App {
       if(g.stage===6)r.drawBrushModel(this.firmware,EXTRACT,[.6,1,.7],[0,t*40,0]);
       for(const e of g.enemies){if(e.dead&&g.tick-e.deathTick>180)continue;const o=v3.lerp(e.prevOrigin,e.origin,alpha);const state=e.dead?'death':e.state==='stunned'?'stun':e.state==='attack'?'attack':e.state==='move'?'move':'idle';const age=e.dead?(g.tick-e.deathTick)/60:state==='stun'?(180-(e.stunUntil-g.tick))/60:state==='attack'?(ENEMIES[e.kind].windup-(e.windup-g.tick))/60:t+e.id*.17;
         const model=ENEMIES[e.kind].model,[fa,fb,blend]=this.assets.frame(model,state,Math.max(0,age));const tint=g.tick<e.stunUntil?[1,.7,.2,.45]:g.tick-e.lastDamage<7?[1,.25,.1,.4]:null;
+        // Both character meshes already include a gun animated with the hand.
         r.drawModel(this.assets.model(model),fa,fb,blend,m4.model(o,[0,e.angles[1],0]),'default',[.95,.9,.8],tint);
-        // Visible held weapon, kept lightweight and separate from skinned character animation.
-        if(!e.dead){const f=angleVectors([0,e.angles[1],0]).forward;const gunPos=v3.add(v3.ma(o,9,f),[0,0,12]);r.drawModel(this.assets.model(e.kind==='harvester'?'rifle':'cannon'),0,0,0,m4.model(gunPos,[0,e.angles[1],0],.55),'default',[.9,.87,.8]);}
       }
       for(const pr of g.projectiles)r.drawBrushModel(pr.gravity?this.grenade:this.bolt,pr.origin,pr.owner==='player'?[1,.8,.3]:[1,.3,.1]);
       this.fx.draw(r);

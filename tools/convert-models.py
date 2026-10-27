@@ -58,7 +58,7 @@ def obj(filename,name):
 def quat(q):
     x,y,z,w=q;return np.array([[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],[2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)],[2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]])
 
-def gltf(filename,name):
+def read_gltf(filename):
     d=json.loads((SRC/filename).read_text());assert d['asset']['version']=='2.0'
     buf=[base64.b64decode(b['uri'].split(',')[1]) for b in d['buffers']]
     dt={5126:'<f4',5123:'<u2',5125:'<u4',5121:'u1'};sizes={'SCALAR':1,'VEC2':2,'VEC3':3,'VEC4':4,'MAT4':16}
@@ -66,6 +66,10 @@ def gltf(filename,name):
         a=d['accessors'][i];v=d['bufferViews'][a['bufferView']];typ=np.dtype(dt[a['componentType']]);n=sizes[a['type']]
         offset=v.get('byteOffset',0)+a.get('byteOffset',0);stride=v.get('byteStride',n*typ.itemsize)
         return np.ndarray((a['count'],n),dtype=typ,buffer=buf[v['buffer']],offset=offset,strides=(stride,typ.itemsize)).copy()
+    return d,acc
+
+def gltf(filename,name):
+    d,acc=read_gltf(filename)
     parents={c:i for i,n in enumerate(d['nodes']) for c in n.get('children',[])}
     materials=[m['pbrMetallicRoughness'].get('baseColorFactor',[1,1,1,1]) for m in d['materials']]
     primitives=[];triangles=[];matids=[];count=0
@@ -78,6 +82,24 @@ def gltf(filename,name):
             idx=acc(prim['indices']).reshape(-1,3)
             primitives.append((np.c_[pos,np.ones(n)],j,w,skin['joints'],ibm))
             triangles.extend((idx+count).tolist());matids.extend([prim['material']]*n);count+=n
+    body_count=count
+    if name=='manager':
+        # Reuse the already licensed Swat pistol, preserving its hand-local skin
+        # coordinates while mapping named joints onto the woman's animated rig.
+        source,source_acc=read_gltf('Swat.gltf')
+        node=next(n for n in source['nodes'] if n.get('name')=='Pistol')
+        skin=source['skins'][node['skin']]
+        by_name={n['name']:i for i,n in enumerate(d['nodes']) if 'name' in n}
+        joints=[by_name[source['nodes'][i]['name']] for i in skin['joints']]
+        ibm=source_acc(skin['inverseBindMatrices']).reshape(-1,4,4).transpose(0,2,1)
+        material_offset=len(materials)
+        materials.extend(m['pbrMetallicRoughness'].get('baseColorFactor',[1,1,1,1]) for m in source['materials'])
+        for prim in source['meshes'][node['mesh']]['primitives']:
+            at=prim['attributes'];pos=source_acc(at['POSITION']);n=len(pos)
+            assert prim.get('mode',4)==4
+            primitives.append((np.c_[pos,np.ones(n)],source_acc(at['JOINTS_0']).astype(int),source_acc(at['WEIGHTS_0']),joints,ibm))
+            triangles.extend((source_acc(prim['indices']).reshape(-1,3)+count).tolist())
+            matids.extend([material_offset+prim['material']]*n);count+=n
     animations={a['name']:a for a in d['animations']}
     selected=[('idle','Idle_Gun',8,True),('move','Run',8,True),('attack','Gun_Shoot',5,False),('stun','HitRecieve',5,False),('death','Death',9,False)]
     frames=[];clips={}
@@ -119,7 +141,7 @@ def gltf(filename,name):
                 output.append(np.c_[p[:,2],p[:,0],p[:,1]])
             frames.append((label+str(k),np.concatenate(output)))
     # Normalise a standing character to the existing 56-unit collision hull.
-    idle=frames[0][1];scale=56/(idle[:,2].max()-idle[:,2].min());floor=idle[:,2].min()
+    idle=frames[0][1][:body_count];scale=56/(idle[:,2].max()-idle[:,2].min());floor=idle[:,2].min()
     center=(idle[:,:2].max(axis=0)+idle[:,:2].min(axis=0))/2
     frames=[(n,(p-np.r_[center,floor])*scale+[0,0,-24]) for n,p in frames]
     mdl(name,frames,triangles,materials,matids,clips)

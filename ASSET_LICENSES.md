@@ -8,10 +8,10 @@ Verified against each official pack page and its actual downloadable `License.tx
 
 | Pack / author | Selected original | Runtime asset | Usage |
 |---|---|---|---|
-| [Ultimate Guns / Quaternius](https://quaternius.com/packs/ultimategun.html) | `AssaultRifle_1.obj` + `.mtl` | `rifle.mdl`, `.pal`, `.json` | Dependency Remover, first-person and held enemy weapon |
-| Same gun pack | `Shotgun_4.obj` + `.mtl` | `cannon.mdl`, `.pal`, `.json` | Held enemy weapon (legacy internal asset name retained) |
-| [Ultimate Modular Men / Quaternius](https://quaternius.com/packs/ultimatemodularcharacters.html) | `Swat.gltf` | `harvester.mdl`, `.pal`, `.json` | Telemetry Harvester, animated |
-| [Ultimate Modular Women / Quaternius](https://quaternius.com/packs/ultimatemodularwomen.html) | `Suit.gltf`, local input name `SuitWoman.gltf` | `manager.mdl`, `.pal`, `.json` | Middleware Manager, animated |
+| [Ultimate Guns / Quaternius](https://quaternius.com/packs/ultimategun.html) | `AssaultRifle_1.obj` + `.mtl` | `rifle.mdl`, `.pal`, `.json` | Dependency Remover, first-person and world pickup |
+| Same gun pack | `Shotgun_4.obj` + `.mtl` | `cannon.mdl`, `.pal`, `.json` | Retained legacy asset; not drawn in gameplay |
+| [Ultimate Modular Men / Quaternius](https://quaternius.com/packs/ultimatemodularcharacters.html) | `Swat.gltf` | `harvester.mdl`, `.pal`, `.json` | Telemetry Harvester, including animated hand-held gun |
+| [Ultimate Modular Women / Quaternius](https://quaternius.com/packs/ultimatemodularwomen.html) | `Suit.gltf` (local `SuitWoman.gltf`) + pistol from `Swat.gltf` | `manager.mdl`, `.pal`, `.json` | Middleware Manager, including animated hand-held gun |
 
 Licence: [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/). Credit is given voluntarily; no endorsement is implied. These are actual downloaded meshes, not stand-in geometric characters. The converter preserves material colours, joins character parts and samples `Idle_Gun`, `Run`, `Gun_Shoot`, `HitRecieve` and `Death` animations. Stun holds the sampled hit-reaction pose. The existing engine's compact animated MDL format was selected instead of introducing a new browser glTF skeletal loader. Position quantization error is recorded per model. Original gun source files are included; complete glTF originals are available from the exact public URLs and SHA-256 receipts in the manifest.
 
@@ -41,4 +41,4 @@ Factory brush geometry, signage, interface, effect textures, pickup geometry and
 
 ## Original weapon geometry
 
-The PATCH-9 pistol, under-barrel launcher attachment and 40mm projectile are original lightweight brush meshes built in `src/main.js`, licensed with the game under Apache-2.0. No new third-party assets are required. The existing Quaternius assault rifle remains the fictional Dependency Remover; the converted shotgun model is retained for enemy-held equipment, not as a third selectable player weapon.
+The PATCH-9 pistol, under-barrel launcher attachment and 40mm projectile are original lightweight brush meshes built in `src/main.js`, licensed with the game under Apache-2.0. No new third-party assets are required. The existing Quaternius assault rifle remains the fictional Dependency Remover. The Harvester keeps its source pistol. The Manager uses the same CC0 pistol mesh, transferred during offline conversion by matching skeleton joint names and preserving the pistol’s inverse bind matrices. Both weapons are baked into all 35 sampled character poses; no separate weapon is overlaid on their torsos. The converted shotgun remains a retained legacy asset, not a selectable player weapon.

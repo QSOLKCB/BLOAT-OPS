@@ -5,7 +5,7 @@
     "commit": "a1f7dbbd2dc34bb29b179042eb22cfe4bd411815",
     "license": "Apache-2.0"
   },
-  "conversion": "tools/convert-models.py; 35 sampled poses per character; MDL position quantization; original material colors; metadata records clip ranges",
+  "conversion": "tools/convert-models.py; 35 sampled poses per character; MDL position quantization; original material colors; metadata records clip ranges; manager includes the Swat pistol skinned onto matching named joints, with body normalization preserved",
   "source_inputs": [
     {
       "name": "Shotgun_4.obj",
@@ -169,30 +169,39 @@
     },
     {
       "path": "assets/models/manager.json",
-      "bytes": 902,
-      "sha256": "59717c786f2f6546625c1359678d48df2a5d8cfbffb8cb49503efb4c7f28dea0",
+      "bytes": 901,
+      "sha256": "807075964a631fc5b299bd7407425ee3833b5c2a6657a057e7721997aa9c886b",
       "source": "https://drive.google.com/file/d/1GjWtofxjmPku25cXJxHrzLLeUbXw7A_s/view?usp=drivesdk",
       "author": "Quaternius",
       "license": "CC0-1.0",
-      "converted": true
+      "converted": true,
+      "additional_sources": [
+        "https://drive.google.com/file/d/1VGmU5f8a43NBT22JWB507NDSLbmNxzF9/view?usp=drivesdk"
+      ]
     },
     {
       "path": "assets/models/manager.mdl",
-      "bytes": 2093804,
-      "sha256": "7d528dbb7cc4d1eb49b64476394ace2f96317b7e6e1a816731345fb5f265a456",
+      "bytes": 2416572,
+      "sha256": "fc1da6cf2964cacb45f1a4b8e64faaa7f171aa9be40d27c0836c1d22ce13a4e0",
       "source": "https://drive.google.com/file/d/1GjWtofxjmPku25cXJxHrzLLeUbXw7A_s/view?usp=drivesdk",
       "author": "Quaternius",
       "license": "CC0-1.0",
-      "converted": true
+      "converted": true,
+      "additional_sources": [
+        "https://drive.google.com/file/d/1VGmU5f8a43NBT22JWB507NDSLbmNxzF9/view?usp=drivesdk"
+      ]
     },
     {
       "path": "assets/models/manager.pal",
       "bytes": 768,
-      "sha256": "52af6566afa50a84cfd8a1e6b41f6a096791cc836f9530d3a851a2c0b37cee43",
+      "sha256": "752295e0d1c09ca3ffba6748133dde1cf02248bfffc3bfba795a42451e07afdd",
       "source": "https://drive.google.com/file/d/1GjWtofxjmPku25cXJxHrzLLeUbXw7A_s/view?usp=drivesdk",
       "author": "Quaternius",
       "license": "CC0-1.0",
-      "converted": true
+      "converted": true,
+      "additional_sources": [
+        "https://drive.google.com/file/d/1VGmU5f8a43NBT22JWB507NDSLbmNxzF9/view?usp=drivesdk"
+      ]
     },
     {
       "path": "assets/models/rifle.json",
