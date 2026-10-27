@@ -35,7 +35,11 @@ const root=path.resolve(__dirname,'..'),fixture=JSON.parse(fs.readFileSync(path.
    await page.getByRole('button',{name:'RUN IT AGAIN'}).click();assert.equal(await page.evaluate(()=>bloat.sim.stage),0);await page.evaluate(()=>{bloat.sim.damage(bloat.sim.player,999,'browser-fixture');bloat.consumeEvents();});await page.getByText('SEGMENTATION FAULT.',{exact:true}).waitFor();
    // Render an input-replayed encounter for visual QA and a fixed, bounded workload.
    const perf=await page.evaluate(f=>{const a=bloat;a.start(f.seed);a.screen='fixture';a.audio.ambient(false);for(const i of f.inputs.slice(0,250))a.sim.step(i);a.angles=a.sim.player.angles.slice();const samples=[];for(let i=0;i<90;i++){const t=performance.now();a.render(i/60);a.hud.draw();a.renderer.gl.finish();samples.push(performance.now()-t);}samples.sort((a,b)=>a-b);const gl=a.renderer.gl,ext=gl.getExtension('WEBGL_debug_renderer_info');return {meanRenderMs:samples.reduce((a,b)=>a+b,0)/samples.length,p95RenderMs:samples[Math.floor(samples.length*.95)],draws:90,viewport:[1440,900],renderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),gl:gl.getError()};},fixture);
-   assert.equal(perf.gl,0);await page.screenshot({path:path.join(root,'test-results',`${name}-combat.png`)});
+   assert.equal(perf.gl,0);
+   // Allow bounded extra time for CI capture; other actions retain the 20s default.
+   const captureStarted=Date.now();console.log(`CAPTURE ${name} combat screenshot (timeout 60000ms)`);
+   await page.screenshot({path:path.join(root,'test-results',`${name}-combat.png`),timeout:60000});
+   console.log(`CAPTURED ${name} combat screenshot in ${Date.now()-captureStarted}ms`);
    assert.deepEqual(errors,[],`${name} console/resources`);assert(!requests.some(u=>/^https?:/.test(u)&&!u.startsWith(`http://127.0.0.1:${server.address().port}/`)),'No external runtime requests');
    report.push({mode:name,browser:await browser.version(),loadMs,requests:requests.length,consoleErrors:errors,replayDigest:replay.digest,performance:perf});console.log('PASS',name,JSON.stringify(report.at(-1)));await page.close();
  }
