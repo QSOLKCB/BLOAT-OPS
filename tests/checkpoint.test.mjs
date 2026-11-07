@@ -50,3 +50,9 @@ test('headless verification replays the inputs and compares the recorded digest'
  const ok=verifyReplay(map,nav,sample());assert.equal(ok.match,true);assert.equal(ok.status,'victory');assert.equal(ok.digest,fixture.finalDigest);
  const r=sample();r.digest='00000000';const no=verifyReplay(map,nav,r);assert.equal(no.match,false);assert.equal(no.digest,fixture.finalDigest);
 });
+test('verification rejects inputs left unconsumed after the mission ends (Codex review)',()=>{
+ const r=sample();r.inputs=[...r.inputs,{forward:1}];r.ticks=r.inputs.length;
+ assert.equal(validateReplay(r,levelId(map)).ok,true,'well-formed file');
+ const v=verifyReplay(map,nav,r);assert.equal(v.match,false,'extra commands after victory must not verify');assert.equal(v.complete,false);assert.equal(v.unconsumed,1);assert.equal(v.ticks,2814);
+ const ok=verifyReplay(map,nav,sample());assert.equal(ok.complete,true);assert.equal(ok.unconsumed,0);assert.equal(ok.match,true);
+});

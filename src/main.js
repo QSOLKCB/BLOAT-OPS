@@ -48,7 +48,8 @@ export class App {
       const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const c=canvas.getContext('2d');c.fillStyle='#242a29';c.fillRect(0,0,1024,256);c.fillStyle='#d79940';c.fillRect(0,0,12,256);c.font='bold 38px monospace';c.fillText(s.title,44,100);c.font='18px monospace';c.fillStyle='#b5b5a7';c.fillText(s.sub,44,155);c.fillStyle='#d79940';c.fillRect(44,193,170,7);
       const verts=[];for(const [x,z,u,v]of [[-160,-40,0,1],[160,-40,1,1],[160,40,1,0],[-160,40,0,0]])verts.push(x,0,z,u,v,0,0,0,-1,0);
       const texture=r.textureFromImage(canvas);const group=r.makeGroupVAO({verts,idx:[0,1,2,0,2,3]});
-      return {...s,model:{groups:[{...group,tex:texture}]}};
+      // The quad spans x ±160 and z ±40 in model space; its exact bound keeps frustum culling conservative.
+      return {...s,model:{groups:[{...group,tex:texture}],bound:Math.hypot(160,40)}};
     });
   }
   bindUI(){
@@ -158,7 +159,8 @@ export class App {
     r.beginFrame(eye,angles,g&&p.aiming?65:this.settings.fov,time);r.drawWorld();
     // Exact frustum culling (ported from QwakeTF): a model whose all-frame bounding sphere lies outside the
     // view volume rasterizes no pixels, so skipping it leaves the image unchanged.
-    const vis=(o,m,scale=1)=>!m||r.sphereVisible(o,(m.bound||0)*scale+2);
+    // A model without a finite bound is never culled (Codex review: unbounded sign quads vanished early).
+    const vis=(o,m,scale=1)=>!m||!Number.isFinite(m.bound)||r.sphereVisible(o,m.bound*scale+2);
     for(const s of this.signs)if(vis(s.origin,s.model))r.drawBrushModel(s.model,s.origin,[.9,.85,.72],s.origin[1]<0?[0,180,0]:[0,0,0]);
     for(let i=0;i<this.gates.length;i++)if(!g||g.world.movers[i].solid)r.drawBrushModel(this.gates[i],this.map.gates[i].origin,[.55,.5,.4]);
     if(g){const t=g.tick/60,alpha=clamp(this.clock.accum*60,0,1);
@@ -195,7 +197,9 @@ export class App {
   openReplay(text){
     let replay;try{replay=JSON.parse(text);}catch(e){return this.replayReport('NOT A REPLAY.','The file is not valid JSON.',[e.message]);}
     const v=validateReplay(replay,this.level);if(!v.ok){this.imported=null;return this.replayReport('REPLAY REJECTED.','Nothing was played. Fix or re-export the file:',v.errors);}
-    const r=verifyReplay(this.map,this.nav,replay);this.imported=replay;
+    const r=verifyReplay(this.map,this.nav,replay);
+    if(!r.complete){this.imported=null;return this.replayReport('REPLAY REJECTED.','Nothing was played. The file declares '+replay.ticks+' ticks, but the mission ended after '+r.ticks+'.',[r.unconsumed+' recorded input'+(r.unconsumed===1?' was':'s were')+' left unconsumed after '+r.status.toUpperCase()+'.']);}
+    this.imported=replay;
     this.replayReport(r.match?'REPLAY VERIFIED.':'DIGEST MISMATCH.',(r.match?'The recorded inputs reproduce the recorded result exactly':'The inputs replay to digest '+r.digest+', not the recorded '+replay.digest)+': '+r.status.toUpperCase()+' after '+Math.floor(r.ticks/3600)+':'+String(Math.floor(r.ticks/60)%60).padStart(2,'0')+', '+r.stats.kills+' removed.',[],true);
   }
   startWatch(){const replay=this.imported;if(!replay)return;this.sim=new Simulation(this.map,this.nav,replay.seed);this.watch={replay,index:0};this.checkpoint=null;this.angles=[0,0,0];this.fx=new Effects();this.toast={text:'REPLAY / ESC OR START TO STOP',until:4};this.hitUntil=this.damageUntil=0;this.show('watch');this.audio.start(this.settings.volume);}

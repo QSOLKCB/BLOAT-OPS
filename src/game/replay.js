@@ -48,10 +48,15 @@ export function validateReplay(replay, level) {
   return { ok: errors.length === 0, errors };
 }
 
-/** Replays a validated file headlessly and compares its final digest. */
+/**
+ * Replays a validated file headlessly. A recording is one command per simulation tick, so it verifies
+ * only if every recorded input is consumed, the simulated tick count equals the declared count, and the
+ * final digest matches. Commands left over after victory or defeat make the file incomplete-as-claimed.
+ */
 export function verifyReplay(map, nav, replay) {
   const g = new Simulation(map, nav, replay.seed);
-  for (const input of replay.inputs) { if (g.status !== 'playing') break; g.step(input); }
-  const digest = g.digest();
-  return { digest, match: digest === replay.digest, status: g.status, ticks: g.tick, stats: { ...g.stats } };
+  let consumed = 0;
+  for (const input of replay.inputs) { if (g.status !== 'playing') break; g.step(input); consumed++; }
+  const digest = g.digest(), unconsumed = replay.inputs.length - consumed, complete = unconsumed === 0 && g.tick === replay.ticks;
+  return { digest, complete, unconsumed, match: complete && digest === replay.digest, status: g.status, ticks: g.tick, stats: { ...g.stats } };
 }

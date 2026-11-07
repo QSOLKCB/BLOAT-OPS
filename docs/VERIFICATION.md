@@ -44,6 +44,18 @@ The Architect intentionally changes the mission. `tools/record-fixture.mjs` prod
 
 The new fixture is a victory at **2,814 ticks** with 30 kills (27 + Architect + 2 adds), 207 shots, 24 damage taken, 3 activations and 5 stuns. Final digest `bf71e949`, input SHA-256 recorded in the fixture. Snapshot version 3 adds `phase2` only for enemies that have it.
 
+### Codex review fixes (first review of `1934c72`)
+
+- **Sector signs were culled while partly visible.** The sign quads built in `prepareModels()` had no `bound`, so culling treated them as 2-unit spheres.
+  - Reproduced in Chromium at eye [300, 0, 100], yaw 60°: 3 of 7 signs were drawn, and the framebuffer differed from the unculled one.
+  - Fix: the signs now carry their exact radius, √(160² + 40²). Models without a finite bound are never culled.
+  - After the fix the frame is byte-identical and 4 of 7 signs are still culled.
+  - `tools/browser-check.cjs` now asserts byte-identical frames with culling on and off at seven views, including this one, in both HTTP and offline modes.
+- **Replay verification ignored commands after the mission ended.** A fixture with one extra command after victory (2,815 declared ticks) verified as a match.
+  - Fix: `verifyReplay` now requires every input to be consumed and the simulated tick count to equal the declared count, and the UI rejects such files with the number of unconsumed inputs.
+  - A regression test reproduced the failure before the fix.
+- After the fixes: `npm test` 37 passed, `tools/check.mjs` passed, the standalone was rebuilt, and the browser check passed over HTTP and offline with digest `bf71e949`.
+
 ### Not verified
 
 Physical controllers, human boss balance and mission duration, Firefox/WebKit, native-GPU performance, real-browser offline reload of checkpoints (they are in-session only), and audible output.
