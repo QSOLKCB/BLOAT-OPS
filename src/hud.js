@@ -18,7 +18,10 @@ export class HUD {
     panel(margin,margin,Math.min(410,w-2*margin),70);
     text('MISSION 001 / '+zone.name,margin+17,margin+21,9,AMBER);
     text(OBJECTIVES[g.stage],margin+17,margin+43,w<800?11:13);
-    text('0'+Math.min(7,g.stage+1)+' / 07   •   '+g.alive+' HOSTILES',margin+17,margin+59,9,'#a9aca5');
+    const boss=g.enemies.find(e=>ENEMIES[e.kind].boss&&!e.dead);
+    if(boss){const bw=Math.min(520,w-2*margin),bx=(w-bw)/2,by=margin+34;text(ENEMIES[boss.kind].name+(boss.phase2?'  /  ESCALATED':''),w/2,by-8,11,boss.phase2?'#f0a38a':AMBER,'center');c.fillStyle='rgba(12,15,16,.84)';c.fillRect(bx,by,bw,7);c.fillStyle=boss.phase2?'#e2603d':AMBER;c.fillRect(bx,by,bw*boss.health/boss.maxHealth,7);c.fillStyle=PAPER;c.fillRect(bx+bw/2-1,by-2,2,11);}
+    if(a.watch){const n=a.watch.replay.inputs.length;text('▶ REPLAY  '+Math.min(g.tick,n)+' / '+n+'  /  ESC OR START TO STOP',w/2,margin+18,11,AMBER,'center');}
+    text(String(Math.min(OBJECTIVES.length,g.stage+1)).padStart(2,'0')+' / '+String(OBJECTIVES.length).padStart(2,'0')+'   •   '+g.alive+' HOSTILES',margin+17,margin+59,9,'#a9aca5');
     // Direction indicator is driven by the actual objective location.
     const target=objectiveTarget(g),d=v3.sub(target,p.origin);let bearing=Math.atan2(d[1],d[0])*180/Math.PI-p.angles[1];bearing=((bearing+540)%360)-180;
     const dir=Math.abs(bearing)<20?'▲':bearing>0?'◀':'▶';
@@ -32,7 +35,7 @@ export class HUD {
     panel(w-margin-220,bottom,220,66);text(p.weapon?WEAPONS[1].short+' / '+(p.rifleAuto?'AUTO':'SEMI'):WEAPONS[0].short,w-margin-203,bottom+18,10,AMBER);text(String(p.ammo[p.weapon]).padStart(3,'0'),w-margin-203,bottom+50,30);text(p.weapon?'40mm: '+p.ammo[2]:'ROUNDS / 01',w-margin-127,bottom+47,10,'#aaa99e');
     const bw=Math.min(310,w-465),bx=w/2-bw/2,by=h-83;
     if(bw>100){const cooldown=Math.max(0,(p.abilityReady-g.tick)/60);text(p.unlocked?'SHITPOSTER MODE':'SHITPOSTER / FIRMWARE REQUIRED',w/2,by-10,10,AMBER,'center');c.fillStyle='#222726';c.fillRect(bx,by,bw,7);c.fillStyle=AMBER;c.fillRect(bx,by,bw*p.charge/100,7);text(!p.unlocked?'RECOVER THE FIRMWARE':cooldown>0?'COOLDOWN '+cooldown.toFixed(1)+'s':p.charge>=100?'['+a.settings.abilityKey.slice(3)+'] READY TO DISRUPT':Math.floor(p.charge)+' / 100 CHARGE',w/2,by+27,10,PAPER,'center');}
-    text('WASD MOVE  /  LMB FIRE  /  RMB 40mm / B MODE  /  E INTERACT',margin,h-15,w<800?8:9,'#c3bfb1');text(Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')+'  |  '+g.stats.kills+' REMOVED',w-margin,h-15,10,AMBER,'right');
+    text(a.padUsed?'STICKS MOVE / AIM  /  RT FIRE  /  RB 40mm  /  B MODE  /  X INTERACT  /  LB SHITPOSTER':'WASD MOVE  /  LMB FIRE  /  RMB 40mm / B MODE  /  E INTERACT',margin,h-15,w<800?8:9,'#c3bfb1');text(Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')+'  |  '+g.stats.kills+' REMOVED',w-margin,h-15,10,AMBER,'right');
     const interact=interactTarget(g);
     if(interact){text('HOLD [E] TO '+(interact.kind==='core'?'SHUT DOWN BLOAT CORE':'ISOLATE RELAY'),cx,cy+75,12,AMBER,'center');c.fillStyle='#121818';c.fillRect(cx-90,cy+86,180,5);c.fillStyle=AMBER;c.fillRect(cx-90,cy+86,180*g.interactTicks/120,5);}
     else if(g.tick<360&&!p.hasRifle)text('MOVE THROUGH THE BAY. PISTOL READY. CLICK ONCE PER SHOT.',cx,h-145,11,AMBER,'center');

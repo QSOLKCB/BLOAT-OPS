@@ -1,6 +1,6 @@
 # Getting started
 
-Use a desktop browser with WebGL2, a keyboard and a mouse. Chromium is the automated browser target. Touch controls, gamepads, Safari/WebKit and Firefox are not certified by this initial verification.
+Use a desktop browser with WebGL2 and either a keyboard and mouse or a standard-layout controller. Chromium is the automated browser target; controller support is verified with a scripted standard gamepad in Chromium, not physical devices. Touch controls, Safari/WebKit and Firefox are not certified.
 
 ## Local HTTP play
 

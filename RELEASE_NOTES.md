@@ -1,3 +1,19 @@
+# Proposed v0.2.0 — Architecture Review
+
+Controller play, a boss, exact checkpoints and validated replays, plus an engine performance update from QwakeTF. This is proposed release text; no version tag or release has been created.
+
+- **Enterprise Solutions Architect:** a two-phase boss after the restructuring waves. It fires fanned volleys, and SHITPOSTER stuns it for only one second. At half health it escalates with faster, wider volleys and two reinforcements. Extraction opens only after it falls.
+- **Controller support:** play with any standard-layout controller, with analog movement and aim, triggers, bumpers and Start to pause. It also drives every menu (D-pad or stick, A select, B back) and has its own sensitivity and invert settings. Buttons held through a menu never act, and unplugging a controller pauses.
+- **Checkpoints:** completing an objective saves an exact checkpoint for the session. Restart from it on the pause or defeat screen with the same health, ammunition and enemies.
+- **Replays:** export a run as a file. Verify or watch a replay from the mission brief: files from other builds, incomplete recordings and malformed inputs are rejected with the reason and never played.
+- **Smoother 60 Hz pacing:** rounded browser frame timestamps no longer make one frame in three run no simulation step.
+- **Engine update from QwakeTF:** faster collision and pathfinding, fewer GPU uploads, and off-screen models skipped. The simulation is about 1.2× faster on the original mission with identical raw state on every tick, and Chromium frames are byte-identical.
+- The retained mission replay was re-recorded for the boss: a victory at 2,814 ticks with 30 kills, digest `bf71e949`. Snapshot version 3 records the boss phase.
+
+Human playtesting of the boss, physical controllers, Firefox/WebKit and native-GPU performance remain unverified. See [verification](docs/VERIFICATION.md).
+
+---
+
 # Proposed v0.1.0 — The Dependency Factory
 
 Initial playable single-player BLOAT-OPS vertical slice. **Your dependencies have been terminated.** This is proposed release text; no version tag or release has been created.

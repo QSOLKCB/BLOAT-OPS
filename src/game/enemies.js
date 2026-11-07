@@ -4,6 +4,9 @@ import { MAX_PROJECTILES } from './weapons.js';
 export const ENEMIES = Object.freeze({
   harvester: {name:'TELEMETRY HARVESTER',health:72,speed:190,range:420,damage:8,windup:30,interval:95,model:'harvester'},
   manager: {name:'MIDDLEWARE MANAGER',health:180,speed:105,range:650,damage:16,windup:50,interval:125,model:'manager'},
+  // Boss: reuses the CC0 manager mesh, scaled and tinted. Spread volleys; SHITPOSTER stuns it for 60 ticks
+  // instead of 180. At half health it escalates once (faster, wider volleys) and calls two bounded adds.
+  architect: {name:'ENTERPRISE SOLUTIONS ARCHITECT',health:1500,speed:95,range:720,damage:12,windup:42,interval:85,model:'manager',scale:1.18,tint:[.55,.18,.75,.22],stun:60,boss:true,volley:3,spread:12,phase2:{interval:55,volley:5,spread:24}},
 });
 export function updateEnemies(g) {
   const p=g.player;
@@ -21,12 +24,19 @@ export function updateEnemies(g) {
     if(e.windup) {
       e.state='attack'; e.velocity=[0,0,0];
       if(g.tick>=e.windup) {
-        e.windup=0; e.nextAttack=g.tick+def.interval;
+        const phase=e.phase2&&def.phase2?def.phase2:def;
+        e.windup=0; e.nextAttack=g.tick+phase.interval;
         if(see && d<def.range+100 && g.projectiles.length<MAX_PROJECTILES) {
           const origin=g.eye(e), target=g.eye(p);
           // Enemy projectiles remain dodgeable; seeded aim jitter is simulation state.
           target[0]+=(g.rng.next()-.5)*30;target[1]+=(g.rng.next()-.5)*30;
-          g.projectiles.push({id:g.nextId++,owner:e.id,origin:origin.slice(),prevOrigin:origin.slice(),velocity:v3.scale(v3.norm(v3.sub(target,origin)),e.kind==='harvester'?500:370),damage:def.damage,radius:0,until:g.tick+240});
+          const aim=v3.norm(v3.sub(target,origin)),speed=e.kind==='harvester'?500:e.kind==='architect'?420:370,count=phase.volley||1;
+          // Volleys fan evenly across +/- spread degrees in yaw; the projectile cap still applies to each bolt.
+          for(let i=0;i<count&&g.projectiles.length<MAX_PROJECTILES;i++){
+            const a=count>1?(-phase.spread+2*phase.spread*i/(count-1))*Math.PI/180:0,c=Math.cos(a),s=Math.sin(a);
+            const dir=[aim[0]*c-aim[1]*s,aim[0]*s+aim[1]*c,aim[2]];
+            g.projectiles.push({id:g.nextId++,owner:e.id,origin:origin.slice(),prevOrigin:origin.slice(),velocity:v3.scale(dir,speed),damage:def.damage,radius:0,until:g.tick+240});
+          }
           g.emit('enemyShot',{origin:origin.slice(),kind:e.kind});
         }
       }

@@ -30,10 +30,13 @@ test('stun respects distance and line of sight, and ability edge does not retrig
 test('health reaches a terminal defeat and no later step mutates gameplay',()=>{const g=make();g.damage(g.player,999,'enemy');assert.equal(g.status,'defeat');const before=g.digest();ticks(g,600,{fire:true,forward:1,ability:true});assert.equal(g.digest(),before);});
 test('enemy AI acquires the player, telegraphs and fires projectiles that can damage',()=>{const {g,e}=isolated();e.awake=true;e.nextAttack=0;g.player.health=125;ticks(g,190);assert(g.stats.damageTaken>0);assert(g.player.health<125);});
 test('supply pickup is conditional, single-use and bounded',()=>{const g=make();g.enemies=[];g.stage=2;moveTo(g,g.supplies[0].origin);g.player.health=20;g.player.ammo=[0,0,0];g.step();assert.equal(g.player.health,75);assert.deepEqual(g.player.ammo,[90,0,0]);assert(g.supplies[0].used);g.step();assert.equal(g.player.health,75);});
-test('mission has ordered unlock, ambush, relays, core, three finite waves and extraction',()=>{const g=make();clear(g);g.step();assert.equal(g.stage,1);moveTo(g,POWERUP);g.step();assert(g.player.unlocked);assert.equal(g.stage,2);assert.equal(g.alive,4);clear(g);g.step();assert.equal(g.stage,3);clear(g);
+test('mission has ordered unlock, ambush, relays, core, three finite waves, the Architect and extraction',()=>{const g=make();clear(g);g.step();assert.equal(g.stage,1);moveTo(g,POWERUP);g.step();assert(g.player.unlocked);assert.equal(g.stage,2);assert.equal(g.alive,4);clear(g);g.step();assert.equal(g.stage,3);clear(g);
  for(const p of RELAYS){moveTo(g,p);ticks(g,120,{interact:true});}
  assert.equal(g.stage,4);assert.equal(g.alive,5);clear(g);moveTo(g,CORE);ticks(g,120,{interact:true});assert.equal(g.stage,5);
- for(let wave=1;wave<=3;wave++){ticks(g,245);assert.equal(g.wave,wave);assert.equal(g.alive,4);clear(g);}ticks(g,245);assert.equal(g.stage,6);assert.equal(g.alive,0);moveTo(g,EXTRACT);g.step();assert.equal(g.status,'victory');
+ for(let wave=1;wave<=3;wave++){ticks(g,245);assert.equal(g.wave,wave);assert.equal(g.alive,4);clear(g);}ticks(g,245);assert.equal(g.stage,6);assert.equal(g.alive,1);assert.equal(g.enemies.find(e=>!e.dead).kind,'architect');
+ moveTo(g,EXTRACT);g.step();assert.equal(g.status,'playing','extraction is not possible while the Architect lives');assert(g.world.movers[2].solid);
+ clear(g);g.step();const boss=g.enemies.find(e=>e.kind==='architect');assert(boss.phase2);assert.equal(boss.health,500);assert.equal(g.alive,3,'phase two calls exactly two adds');
+ clear(g);g.step();assert.equal(g.stage,7);assert.equal(g.alive,0);assert(!g.world.movers[2].solid);moveTo(g,EXTRACT);g.step();assert.equal(g.status,'victory');
  const hash=g.digest();ticks(g,20);assert.equal(g.digest(),hash);
 });
 test('interaction resets when released or moving away; core cannot be skipped',()=>{const g=make();moveTo(g,CORE);ticks(g,121,{interact:true});assert.notEqual(g.stage,5);g.stage=3;g.enemies=[];moveTo(g,RELAYS[0]);ticks(g,60,{interact:true});assert.equal(g.interactTicks,60);g.step();assert.equal(g.interactTicks,0);assert(!g.relays[0]);});
@@ -44,7 +47,7 @@ test('simulation instances have independent collision stamps and gate states',()
 test('narrowing sector shoulders contain the player with mission gates closed or open',()=>{
  for(let i=1;i<ZONES.length;i++) {
   const previous=ZONES[i-1],next=ZONES[i];if(previous.half<=next.half)continue;
-  for(const side of [-1,1])for(const stage of [1,6]) {
+  for(const side of [-1,1])for(const stage of [1,7]) {
    const g=make();g.enemies=[];g.stage=stage;
    const start=[next.from-50,side*(previous.half+next.half)/2,25];
    assert(!g.world.trace(start,start,g.player.mins,g.player.maxs).startsolid);
@@ -93,4 +96,21 @@ test('pistol cannot reset rifle automatic cadence; grenades expire on their fuse
  assert(fireGrenade(g));const pr=g.projectiles[0];pr.origin=[800,0,1000];pr.velocity=[0,0,0];pr.until=g.tick+2;
  g.tick++;updateProjectiles(g);assert.equal(g.projectiles.length,1);
  g.tick++;updateProjectiles(g);assert.equal(g.projectiles.length,0);assert(g.events.some(e=>e.type==='explosion'));
+});
+
+// The Enterprise Solutions Architect (ROADMAP item 4).
+function bossFight(){const g=make();g.enemies=[];g.stage=6;g.spawnEncounter(7);const b=g.enemies[0];moveTo(g,[2600,0,25]);g.player.angles=[0,0,0];g.player.hasRifle=true;g.player.ammo=[120,180,8];return {g,b};}
+test('the Architect resists SHITPOSTER: 60 stun ticks instead of 180, with normal immunity',()=>{
+ const {g,b}=bossFight();b.awake=true;g.player.unlocked=true;g.player.charge=100;g.tick=1000;assert(activateAbility(g));
+ assert.equal(b.stunUntil,1060);assert.equal(b.immuneUntil,1060+ABILITY.immunity);assert.equal(g.stats.stuns,1);
+ for(let i=0;i<59;i++){g.tick++;updateEnemies(g);}assert.equal(b.state,'stunned');g.tick++;updateEnemies(g);assert.notEqual(b.state,'stunned','recovers after 60 ticks');
+});
+test('the Architect fires 3-bolt volleys, 5 after escalating, and never exceeds the projectile cap',()=>{
+ const volley=(phase2,existing=0)=>{const {g,b}=bossFight();b.awake=true;b.phase2=phase2;b.nextAttack=0;g.projectiles=Array.from({length:existing},(_,i)=>({id:-i,owner:'x',origin:[0,0,-500],prevOrigin:[0,0,-500],velocity:[0,0,0],damage:0,radius:0,until:1e9}));const before=g.projectiles.length;for(let i=0;i<60&&g.projectiles.length===before;i++){g.tick++;updateEnemies(g);}return g.projectiles.length-before;};
+ assert.equal(volley(false),3);assert.equal(volley(true),5);assert.equal(volley(true,94),2,'capped at 96 projectiles');
+});
+test('escalation happens exactly once and the extraction gate opens only after the Architect and adds fall',()=>{
+ const {g,b}=bossFight();assert(g.world.movers[2].solid);b.health=800;g.step();assert(!b.phase2);b.health=750;g.step();assert(b.phase2);assert.equal(g.alive,3);
+ const events=g.events.map(e=>e.type);b.health=10;g.step();assert.equal(g.alive,3,'no second set of adds');assert(!events.includes('boss'));
+ for(const e of g.enemies)g.damage(e,9999,'player');g.step();assert.equal(g.stage,7);assert(!g.world.movers[2].solid);
 });

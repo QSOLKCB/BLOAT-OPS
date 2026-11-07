@@ -46,6 +46,13 @@ const root=path.resolve(__dirname,'..'),fixture=JSON.parse(fs.readFileSync(path.
    // Render an input-replayed encounter for visual QA and a fixed, bounded workload.
    const perf=await page.evaluate(f=>{const a=bloat;a.start(f.seed);a.screen='fixture';a.audio.ambient(false);for(const i of f.inputs.slice(0,350))a.sim.step(i);a.angles=a.sim.player.angles.slice();const samples=[];for(let i=0;i<90;i++){const t=performance.now();a.render(i/60);a.hud.draw();a.renderer.gl.finish();samples.push(performance.now()-t);}samples.sort((a,b)=>a-b);const gl=a.renderer.gl,ext=gl.getExtension('WEBGL_debug_renderer_info');return {meanRenderMs:samples.reduce((a,b)=>a+b,0)/samples.length,p95RenderMs:samples[Math.floor(samples.length*.95)],draws:90,viewport:[1440,900],renderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),gl:gl.getError()};},fixture);
    assert.equal(perf.gl,0);
+   // Frustum culling must be exact: the same frame with culling on and off is byte-identical, including
+   // views where only part of a large model (the sector signs) is on screen.
+   const culling=await page.evaluate(()=>{const a=bloat,r=a.renderer,gl=r.gl;a.start(0xB10A7001);a.screen='fixture';a.audio.ambient(false);const fov=a.settings.fov,shake=a.settings.shake;a.settings.fov=90;a.settings.shake=false;const pl=a.sim.player;
+    const hash=()=>{const w=gl.drawingBufferWidth,h=gl.drawingBufferHeight,px=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);let x=2166136261;for(let i=0;i<px.length;i++)x=Math.imul(x^px[i],16777619);return x>>>0;};
+    const out=[];for(const [x,y,yaw] of [[300,0,60],[300,0,45],[300,0,75],[900,0,-60],[1600,0,120],[2500,0,200],[3600,0,-120]]){pl.origin=[x,y,78];pl.prevOrigin=pl.origin.slice();a.clock.reset();a.angles=[0,yaw,0];r.cull=false;a.render(100);const off=hash();r.cull=true;a.render(100);out.push({x,yaw,same:hash()===off});}
+    a.settings.fov=fov;a.settings.shake=shake;return out;});
+   for(const v of culling)assert(v.same,`${name}: frustum culling changed the frame at x=${v.x}, yaw=${v.yaw}`);
    // Allow bounded extra time for CI capture; other actions retain the 20s default.
    const captureStarted=Date.now();console.log(`CAPTURE ${name} combat screenshot (timeout 60000ms)`);
    try {
