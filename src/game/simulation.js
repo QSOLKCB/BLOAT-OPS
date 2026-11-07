@@ -83,8 +83,12 @@ export class Simulation {
   }
 }
 // Rendering cadence supplies elapsed time; recorded commands are consumed by simulation tick.
+// Browsers round frame timestamps (often to 0.1 ms), so a 60 Hz display reports 16.7, 16.6, 16.7 ms.
+// Compared exactly, one frame in three then runs no tick and the next runs two. A frame within 0.5 ms
+// of a whole number of ticks counts as exactly that many (as in QSOLKCB/ARCADE v0.4.0). This changes
+// only real-time pacing: replays and the simulation consume one command per tick regardless.
 export class FixedClock {
   constructor(){this.accum=0;this.dropped=0;}
-  advance(seconds,step){const clamped=Math.max(0,Math.min(.25,seconds));this.dropped+=Math.max(0,seconds-clamped);this.accum+=clamped;let count=0;while(this.accum+1e-10>=TICK&&count<15){step();this.accum-=TICK;count++;}this.accum=Math.max(0,this.accum);return count;}
+  advance(seconds,step){if(!Number.isFinite(seconds))seconds=0;let clamped=Math.max(0,Math.min(.25,seconds));this.dropped+=Math.max(0,seconds-clamped);const whole=Math.round(clamped/TICK);if(whole>=1&&Math.abs(clamped-whole*TICK)<.0005)clamped=whole*TICK;this.accum+=clamped;let count=0;while(this.accum+1e-10>=TICK&&count<15){step();this.accum-=TICK;count++;}this.accum=Math.max(0,this.accum);return count;}
   reset(){this.accum=0;}
 }
