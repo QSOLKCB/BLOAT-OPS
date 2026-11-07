@@ -102,21 +102,24 @@ export class App {
     this.eye=eye;r.dlights=[];
     if(g){for(const pr of g.projectiles.slice(0,6))r.dlights.push({origin:pr.origin,radius:150,color:pr.owner==='player'?[1,.6,.2]:[1,.22,.08]});if(g.tick<p.abilityUntil)r.dlights.push({origin:eye,radius:300,color:[.7,.45,.13]});}
     r.beginFrame(eye,angles,g&&p.aiming?65:this.settings.fov,time);r.drawWorld();
-    for(const s of this.signs)r.drawBrushModel(s.model,s.origin,[.9,.85,.72],s.origin[1]<0?[0,180,0]:[0,0,0]);
+    // Exact frustum culling (ported from QwakeTF): a model whose all-frame bounding sphere lies outside the
+    // view volume rasterizes no pixels, so skipping it leaves the image unchanged.
+    const vis=(o,m,scale=1)=>!m||r.sphereVisible(o,(m.bound||0)*scale+2);
+    for(const s of this.signs)if(vis(s.origin,s.model))r.drawBrushModel(s.model,s.origin,[.9,.85,.72],s.origin[1]<0?[0,180,0]:[0,0,0]);
     for(let i=0;i<this.gates.length;i++)if(!g||g.world.movers[i].solid)r.drawBrushModel(this.gates[i],this.map.gates[i].origin,[.55,.5,.4]);
     if(g){const t=g.tick/60,alpha=clamp(this.clock.accum*60,0,1);
-      for(const s of g.supplies)if(!s.used)r.drawBrushModel(this.pickup,v3.add(s.origin,[0,0,Math.sin(t*2+s.id)*3]),[.9,1,.85],[0,t*25,0]);
+      for(const s of g.supplies)if(!s.used&&r.sphereVisible(s.origin,this.pickup.bound+5))r.drawBrushModel(this.pickup,v3.add(s.origin,[0,0,Math.sin(t*2+s.id)*3]),[.9,1,.85],[0,t*25,0]);
       if(!p.hasRifle)r.drawModel(this.assets.model('rifle'),0,0,0,m4.model(v3.add(RIFLE_PICKUP,[0,0,15]),[0,t*35,0],.65),'default',[1.3,1.1,.7]);
       if(!p.unlocked)r.drawBrushModel(this.firmware,POWERUP,[1,.9,.6],[0,t*35,0]);
-      for(let i=0;i<2;i++)r.drawBrushModel(this.terminal,RELAYS[i],g.relays[i]?[.2,.35,.2]:[1,1,.7]);
+      for(let i=0;i<2;i++)if(vis(RELAYS[i],this.terminal))r.drawBrushModel(this.terminal,RELAYS[i],g.relays[i]?[.2,.35,.2]:[1,1,.7]);
       r.drawBrushModel(this.terminal,CORE,g.stage>=5?[.2,.25,.2]:[1,.8,.5]);
       if(g.stage===6)r.drawBrushModel(this.firmware,EXTRACT,[.6,1,.7],[0,t*40,0]);
       for(const e of g.enemies){if(e.dead&&g.tick-e.deathTick>180)continue;const o=v3.lerp(e.prevOrigin,e.origin,alpha);const state=e.dead?'death':e.state==='stunned'?'stun':e.state==='attack'?'attack':e.state==='move'?'move':'idle';const age=e.dead?(g.tick-e.deathTick)/60:state==='stun'?(180-(e.stunUntil-g.tick))/60:state==='attack'?(ENEMIES[e.kind].windup-(e.windup-g.tick))/60:t+e.id*.17;
-        const model=ENEMIES[e.kind].model,[fa,fb,blend]=this.assets.frame(model,state,Math.max(0,age));const tint=g.tick<e.stunUntil?[1,.7,.2,.45]:g.tick-e.lastDamage<7?[1,.25,.1,.4]:null;
+        const model=ENEMIES[e.kind].model;if(!vis(o,this.assets.model(model)))continue;const [fa,fb,blend]=this.assets.frame(model,state,Math.max(0,age));const tint=g.tick<e.stunUntil?[1,.7,.2,.45]:g.tick-e.lastDamage<7?[1,.25,.1,.4]:null;
         // Both character meshes already include a gun animated with the hand.
         r.drawModel(this.assets.model(model),fa,fb,blend,m4.model(o,[0,e.angles[1],0]),'default',[.95,.9,.8],tint);
       }
-      for(const pr of g.projectiles)r.drawBrushModel(pr.gravity?this.grenade:this.bolt,pr.origin,pr.owner==='player'?[1,.8,.3]:[1,.3,.1]);
+      for(const pr of g.projectiles)if(vis(pr.origin,pr.gravity?this.grenade:this.bolt))r.drawBrushModel(pr.gravity?this.grenade:this.bolt,pr.origin,pr.owner==='player'?[1,.8,.3]:[1,.3,.1]);
       this.fx.draw(r);
       if(!p.dead){const {forward,right,up}=angleVectors(angles),kick=Math.max(0,1-(g.tick-p.lastFire)/10);let pos=v3.add(v3.ma(eye,12-kick*3,forward),v3.add(v3.scale(right,p.aiming?3:9),v3.scale(up,-10-kick)));r.beginViewModel();if(p.weapon===0)r.drawBrushModel(this.pistol,v3.add(pos,v3.add(v3.scale(right,-3),v3.scale(up,3))),[1.3,1.2,1.05],[angles[0]+kick*3,angles[1],0]);else {r.drawModel(this.assets.model('rifle'),0,0,0,m4.model(pos,[angles[0]+kick*3,angles[1],0],.60),'default',[1.3,1.2,1.05]);r.drawBrushModel(this.launcher,pos,[1.1,1,.85],[angles[0]+kick*3,angles[1],0]);}r.endViewModel();}
       const basis=angleVectors(angles);this.audio.setListener(eye,basis.forward,basis.up);

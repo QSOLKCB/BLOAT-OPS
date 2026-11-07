@@ -6,4 +6,9 @@ for(const f of files.filter(f=>f.endsWith('.mdl'))){const b=fs.readFileSync(f),m
 for(const f of files.filter(f=>f.endsWith('.png'))){const b=fs.readFileSync(f);if(b.readUInt32BE(0)!==0x89504e47)throw Error('Invalid PNG '+f);const w=b.readUInt32BE(16),h=b.readUInt32BE(20);if(!w||!h||w>2048||h>2048)throw Error('Texture dimensions '+f);}
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'assets/manifest.json')));for(const f of manifest.files){const b=fs.readFileSync(path.join(root,f.path));if(createHash('sha256').update(b).digest('hex')!==f.sha256)throw Error('Asset digest '+f.path);if(b.length!==f.bytes)throw Error('Asset size '+f.path);}
 for(const f of files.filter(f=>f.includes('/src/game/'))){if(/Math\.random\s*\(|Date\.|performance\./.test(fs.readFileSync(f,'utf8')))throw Error('Nondeterministic gameplay API: '+f);}
-console.log('PASS',modules,'JavaScript syntax checks;',manifest.files.length,'asset hashes verified.');
+// The upstream import receipt is enforced: every imported engine file must match its latest recorded hash
+// (the original import, or the newest update that touched it). Re-record an update when engine code changes.
+const receipt=JSON.parse(fs.readFileSync(path.join(root,'docs/UPSTREAM_IMPORT.json'))),expected=new Map(receipt.files.map(f=>[f.path,f.import_sha256]));
+for(const u of receipt.updates||[])for(const f of u.files)expected.set(f.path,f.result_sha256);
+for(const [file,hash] of expected)if(createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex')!==hash)throw Error('Engine file differs from docs/UPSTREAM_IMPORT.json: '+file);
+console.log('PASS',modules,'JavaScript syntax checks;',manifest.files.length,'asset hashes verified;',expected.size,'imported engine files match the upstream receipt.');
