@@ -53,7 +53,7 @@ The player begins with PATCH-9; rifle ownership is granted by the intake pickup 
 
 `src/gamepad.js` maps a standard controller onto the same per-tick command the keyboard and mouse produce. Edges queue presses exactly like mouse clicks, so semi-auto fires once per press and recordings stay compatible. Sampling is per rendered frame; the simulation still consumes one command per tick. Neutral re-arming applies after connection, controller changes, start, resume, pause and focus loss. `clearInput()` also drops the cached pad sample, so a button held while resuming cannot act in that frame. Menus use spatial focus navigation; the first press lands on the screen's primary action.
 
-`FixedClock` treats a frame within 0.5 ms of a whole number of ticks as exactly that many. Browsers round frame timestamps, which otherwise made one 60 Hz frame in three run zero ticks and the next two. This affects real-time pacing only.
+`FixedClock` treats a frame within 0.5 ms of a whole number of ticks as exactly that many. Browsers round frame timestamps, which otherwise made one 60 Hz frame in three run zero ticks and the next two. This affects real-time pacing only. The time snapping adds or removes is carried as drift: frames snap only while the total stays under 0.5 ms, and the next unsnapped frame repays it, so a steady 59, 61, 75 or 144 Hz display still runs exactly 60 ticks per second.
 
 ## Checkpoints and replay files
 
