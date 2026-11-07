@@ -16,6 +16,17 @@ BLOAT is the fictional Bureau of Legacy Architecture and Operational Transformat
 | Escape | Pause; simulation stops completely |
 | P | Toggle performance counters |
 
+| Controller (standard layout) | Action |
+|---|---|
+| Left stick / click | Move / hold to sprint |
+| Right stick | Aim (sensitivity and invert in settings) |
+| RT / LT | Fire (one shot per press for semi-auto) / precision aim |
+| RB / LB | Rifle 40mm grenade / SHITPOSTER MODE |
+| A / X, held / Y / B | Jump / interact / switch weapon / rifle mode |
+| Start | Pause and resume |
+
+In menus the D-pad or stick moves between buttons, A selects, left/right changes a setting and B goes back or resumes. After a controller connects, and whenever play starts, resumes or pauses, release every button and stick once before it responds, so a button held through a menu never fires or jumps. Unplugging a controller pauses the game.
+
 You start with the **PATCH-9**, a semi-auto pistol (30 damage). Each left-button press fires once, with no artificial semi-auto cooldown. Holding the button does not repeat. Quick down/up clicks between frames are retained and consumed by the 60 Hz simulation, with a safety bound of eight presses per tick.
 
 Clear intake security, then walk over the **Dependency Remover** rifle in the intake room before collecting the firmware. It arrives with 180 rifle rounds and eight grenades and is automatically equipped. Its fictional select-fire mechanism defaults to **AUTO**: hold LMB for one 24-damage round every seven ticks. Press **B** for **SEMI**, where each click fires one round. The HUD shows the selected mode. The rifle cannot be selected or fired before pickup.
@@ -33,3 +44,13 @@ Survive the ambush, then clear the middleware hall and hold E at both relay cons
 Health reaching zero ends the run. **Restart mission** starts again in the engineering bay with the same seed. There are no mid-mission checkpoints or save files in this slice. Settings persist locally where browser storage is available.
 
 Settings can lower audio volume to zero, reduce disruption/flashing effects, and turn off camera recoil and movement bob. Recoil animation remains visible on the weapon. Desktop keyboard/mouse play is the supported interaction mode.
+
+## The Enterprise Solutions Architect
+
+After the third restructuring wave, the **Enterprise Solutions Architect** joins the call in the Dependency Chamber. It has 1,500 health and fires fanned three-bolt volleys; strafe across them. SHITPOSTER MODE still works but only stuns it for one second. At half health it escalates: five-bolt volleys come faster and two Telemetry Harvesters join. The extraction gate stays closed until the Architect and its reinforcements are down.
+
+## Checkpoints and replays
+
+Each completed objective saves an exact checkpoint for this session. **Restart from checkpoint** on the pause or defeat screen returns you to that moment with the same health, ammunition and enemies; **Restart mission** starts over. Checkpoints are not kept after you close the page.
+
+**Export replay** downloads the current run's inputs. **Verify or watch a replay** on the mission brief loads such a file: it is checked for this exact mission build and for completeness, replayed headlessly to confirm the recorded result, and can then be watched (Esc, Start or B stops playback). Files from other builds, truncated recordings and malformed inputs are rejected with the reason and never played.

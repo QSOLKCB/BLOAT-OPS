@@ -1,5 +1,55 @@
 # Verification and engineering handoff
 
+## v0.2.0 candidate: engine update, controllers, checkpoints, replays and the Architect (7 November 2026)
+
+Local checks on a Linux x64 container with Node v22.23.4 (CI uses Node 24.22.1) and headless Chromium 153 with SwiftShader. Read remote CI and Codex review status on the PR for its exact final commit. No deployment is claimed.
+
+### Executed checks
+
+- `node tools/check.mjs`: 36 syntax checks, 30 asset hashes, and **9 imported engine files match `docs/UPSTREAM_IMPORT.json`**. This last check is new; a deliberate one-byte edit to `pmove.js` made it fail.
+- `node --test tests/*.test.mjs`: **36 passed, 0 failed**. New suites:
+  - `input.test.mjs`: deadzone, neutral arming, controller swap, edges, menu repeat and clock pacing. The clock test fails on the previous clock: 1,200 zero-tick and 1,200 two-tick frames per minute at 60 Hz.
+  - `checkpoint.test.mjs`: restores through JSON at every 150th tick and every objective boundary, with identical raw state on every later tick. It also covers replay validation and verification.
+  - Boss tests in `simulation.test.mjs`.
+- `node tools/build.mjs`: the standalone build has 23 modules, 29 embedded resources, 7,111,172 bytes.
+- `node tools/browser-check.cjs`: **HTTP and offline both passed**, with zero console errors, WebGL error 0 and replay digest `bf71e949` in Chromium (equal to Node).
+- `node tools/benchmark.mjs`: 2,814 ticks; mean 0.012–0.021 ms per tick; p95 0.030–0.055 ms; startup 82.8 ms.
+
+### Engine update: exactness and measurements
+
+- `tools/parity-ab.mjs` replayed the v0.1.0 mission fixture through `fe5928e` and the updated engine in one Node process, before the boss changed the mission. The raw unrounded snapshot hash was **identical after every tick**, and the simulation was **1.21×** faster (median 37.3 → 30.9 ms over 7 alternating runs).
+- `tools/render-ab.cjs` rendered 18 frames (3 replay states × 6 views) **byte-identical** to `fe5928e`, before and after the boss work.
+  - Frustum culling was active in those views: brush draws fell from 21 to 5–15 and model draws from 3 to 1–3.
+  - Render CPU time in SwiftShader showed **no reliable change**: two runs measured 0.178 → 0.149 ms and 0.164 → 0.172 ms per frame. No native-GPU measurement exists.
+
+### Controllers, checkpoints and replays (Chromium, scripted standard gamepad)
+
+- **Controller:**
+  - the first D-pad press focused BEGIN OPERATION with a visible ring;
+  - A held through the start did not jump;
+  - the sticks moved the player (+136 units) and turned the view;
+  - two RT presses fired exactly two pistol shots;
+  - Start paused and resumed, B resumed, and a `gamepaddisconnected` event paused;
+  - the pause menu reached settings and returned via the pad.
+- **Timing caveat:** with 90 ms presses, one B press was missed between SwiftShader frames. 250 ms presses passed. Real 60 Hz hardware polls every 16 ms.
+- **Replay and checkpoint flows:**
+  - a keyboard run exported from the pause screen validated and reproduced its digest in Node;
+  - a checkpoint saved at the first objective restored after defeat with an identical digest;
+  - the mission fixture imported as **REPLAY VERIFIED** and played back;
+  - a file with an unknown input field was rejected with the input index and could not be watched.
+
+### Golden replay change (explained)
+
+The Architect intentionally changes the mission. `tools/record-fixture.mjs` produces normal inputs only and never overrides state. It now targets extraction at stage 7 and falls back to pistol presses if rifle ammunition runs out.
+
+The new fixture is a victory at **2,814 ticks** with 30 kills (27 + Architect + 2 adds), 207 shots, 24 damage taken, 3 activations and 5 stuns. Final digest `bf71e949`, input SHA-256 recorded in the fixture. Snapshot version 3 adds `phase2` only for enemies that have it.
+
+### Not verified
+
+Physical controllers, human boss balance and mission duration, Firefox/WebKit, native-GPU performance, real-browser offline reload of checkpoints (they are in-session only), and audible output.
+
+---
+
 Local checks executed 27 October 2026 (Australia/Adelaide) for the pistol/rifle/grenade update. Read remote CI and review status on the PR for its exact current commit. No new deployment is claimed by these local results.
 
 ## Executed checks

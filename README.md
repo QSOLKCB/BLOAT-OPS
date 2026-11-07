@@ -10,14 +10,18 @@ An original single-player browser FPS about one independent researcher and an in
 
 ![BLOAT-OPS gameplay — the corporate ambush](docs/screenshots/combat.png)
 
-**Mission 001: The Dependency Factory.** Infiltrate five industrial sectors, recover SHITPOSTER firmware, isolate two relays, shut down the BLOAT Core, survive three restructuring waves and extract. Fight fast Telemetry Harvesters and armoured Middleware Managers starting with the PATCH-9 semi-auto pistol, then collecting the select-fire Dependency Remover rifle with its arcing 40mm grenade launcher. SHITPOSTER MODE actually interrupts and stuns nearby visible enemies, then lets them recover.
+**Mission 001: The Dependency Factory.** Infiltrate five industrial sectors, recover SHITPOSTER firmware, isolate two relays, shut down the BLOAT Core, survive three restructuring waves, take down the **Enterprise Solutions Architect** and extract. Fight fast Telemetry Harvesters and armoured Middleware Managers starting with the PATCH-9 semi-auto pistol, then collecting the select-fire Dependency Remover rifle with its arcing 40mm grenade launcher. SHITPOSTER MODE actually interrupts and stuns nearby visible enemies, then lets them recover.
 
 ```sh
 node tools/serve.mjs
 # Open http://127.0.0.1:8080/
 ```
 
-Desktop browser with WebGL2, keyboard and mouse required. **WASD** move; **mouse** aim; **Space** jump; **Shift** sprint; **LMB** fire; **RMB** rifle grenade; **B** rifle fire mode; **1/2** select; **Q** precision aim; **F** SHITPOSTER; hold **E** interact; **Esc** pause. Settings include sensitivity, FOV, audio, ability key and reduced effects.
+Desktop browser with WebGL2, with keyboard and mouse or a standard controller. **WASD** move; **mouse** aim; **Space** jump; **Shift** sprint; **LMB** fire; **RMB** rifle grenade; **B** rifle fire mode; **1/2** select; **Q** precision aim; **F** SHITPOSTER; hold **E** interact; **Esc** pause. Settings include sensitivity, FOV, audio, ability key and reduced effects.
+
+**Controller:** left stick move (click to sprint), right stick aim, **RT** fire, **LT** precision aim, **RB** 40mm, **LB** SHITPOSTER, **A** jump, hold **X** interact, **Y** weapon, **B** rifle mode, **Start** pause. The D-pad or stick also drives every menu (A select, B back). Unplugging a controller pauses.
+
+**Checkpoints and replays:** completing an objective saves an exact checkpoint for the session; restart from it on the pause or defeat screen. **Export replay** saves the run as a file, and **Verify or watch a replay** on the mission brief checks a file against this build (rejecting incomplete or foreign recordings) and plays it back.
 
 For one-file offline play, run `node tools/build.mjs` and open `dist/BLOAT-OPS-standalone.html`. Source `index.html` redirects to that built file when opened from disk.
 

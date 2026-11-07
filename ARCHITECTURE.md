@@ -35,7 +35,7 @@ The raw Node/Chromium comparison exposed a final player-coordinate difference of
 
 Quaternius glTF skins are sampled offline into 35 animation poses per character (idle, run, attack, hit reaction, death), converted to QwakeTF's compact MDL delivery format with per-model colour palettes. This avoids shipping a skeletal runtime/FBX loader. Source URLs, original file hashes, converted hashes, clip names and quantization precision are retained. Guns are converted from genuine OBJ meshes. Enemy held guns use an approximate separate transform, not skeletal hand attachments; improvements belong in the roadmap.
 
-Limits: 32 live enemy objects, 96 projectiles, 600 cosmetic particles, 128 events per tick, capped tracers, staggered per-enemy path recomputation and bounded replay/performance history. The mission itself spawns 27 enemies across seven encounters. There is no dependency summoner or boss in v0.1.0.
+Limits: 32 live enemy objects (the Architect and its two phase-two adds included), 96 projectiles, 600 cosmetic particles, 128 events per tick, capped tracers, staggered per-enemy path recomputation and bounded replay/performance history. The mission spawns 27 enemies across seven encounters, then the Enterprise Solutions Architect and, at its half health, two adds (encounters 8 and 9).
 
 ## Packaging
 
@@ -44,3 +44,23 @@ The source is an ordinary static application with relative URLs. `tools/build.mj
 ## Weapon input revision
 
 The player begins with PATCH-9; rifle ownership is granted by the intake pickup after the initial encounter. Primary fire distinguishes held input from bounded press counts (0–8 per tick), preserving down/up events between rendered frames. `updateWeapons` owns edge inference for headless inputs, semi/auto selection and firing order (mode, primary, alternate). Semi-auto presses have no cadence delay; rifle automatic fire is tick-capped. Alternate fire requires the equipped rifle and consumes a separate reserve; projectile position uses constant-gravity integration and swept collision, with impact/fuse detonation. Snapshot version 2 records ownership, mode, trigger latches, grenade cooldown and gravity. The version-2 input fixture deliberately replaces the obsolete cannon/hold-fire recording; it is regenerated through normal input commands, never state overrides.
+
+## Engine update from QwakeTF (2026-11-07)
+
+`world.js`, `nav.js` and `renderer.js` take the exact performance work from QwakeTF commit `3852d20` (QwakeTF pull request #4). That covers buffered collision candidate gathering, typed-array A* with a parallel-array heap, numeric navigation keys, once-per-frame dynamic-light upload per program, view-projection upload on change, exact model bounds with frustum culling, and retained dynamic GPU buffers. QwakeTF's `clipBrush` gameplay fix is deliberately not taken. [docs/UPSTREAM_IMPORT.json](docs/UPSTREAM_IMPORT.json) keeps the original `a1f7dbb` record and adds an update entry, and `tools/check.mjs` now fails if any imported engine file drifts from its latest recorded hash. `tools/parity-ab.mjs` compares raw per-tick snapshots between two source trees, and `tools/render-ab.cjs` compares Chromium framebuffers. Both are development tools.
+
+## Controller input
+
+`src/gamepad.js` maps a standard controller onto the same per-tick command the keyboard and mouse produce. Edges queue presses exactly like mouse clicks, so semi-auto fires once per press and recordings stay compatible. Sampling is per rendered frame; the simulation still consumes one command per tick. Neutral re-arming applies after connection, controller changes, start, resume, pause and focus loss. `clearInput()` also drops the cached pad sample, so a button held while resuming cannot act in that frame. Menus use spatial focus navigation; the first press lands on the screen's primary action.
+
+`FixedClock` treats a frame within 0.5 ms of a whole number of ticks as exactly that many. Browsers round frame timestamps, which otherwise made one 60 Hz frame in three run zero ticks and the next two. This affects real-time pacing only.
+
+## Checkpoints and replay files
+
+`Simulation.fromSnapshot()` rebuilds a run from `snapshot()`. Every field gameplay reads is either serialized or a per-kind constant; the `pmove` fields not serialized are rewritten at the start of each move or are write-only. `encodeState`/`decodeState` preserve `-0` and non-finite numbers through JSON. `tests/checkpoint.test.mjs` restores at every 150th tick and every objective boundary of the retained mission. It requires the identical raw state on every later tick and the pinned final digest.
+
+The shell saves a checkpoint (state, digest and the inputs that led there) whenever the objective stage changes, in memory only. A restore must reproduce the stored digest or the mission restarts from the beginning. Replay files (`format: "bloat-ops-replay"`, input version 2) carry a `level` identity hash of collision geometry, gates, mission points and encounters. `src/game/replay.js` rejects other builds, truncated recordings, tick-count mismatches and any input with unknown fields, wrong types or out-of-range values before anything is played.
+
+## The Enterprise Solutions Architect
+
+`architect` is an enemy kind (1,500 health) that reuses the manager mesh at 1.18× with a tint. Volleys fan evenly across ±12° (3 bolts) or, once escalated, ±24° (5 bolts, 55-tick interval); each bolt still respects the projectile cap. `ENEMIES.architect.stun` (60 ticks) gives explicit stun resistance with the normal immunity window. Escalation is decided in `updateObjectives` at the end of a tick, exactly once, and spawns encounter 9 through the bounded `spawnEncounter`. Snapshot version 3 adds `phase2` for enemies that have it, so other enemies serialize exactly as before. The third gate opens at stage 7, after the Architect.
