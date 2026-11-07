@@ -27,7 +27,7 @@ test('a run restored from any checkpoint continues with the identical raw state 
 
 test('restoring rejects unknown snapshot versions and enemy kinds',()=>{
  const g=new Simulation(map,nav,1),s=g.snapshot();
- assert.throws(()=>Simulation.fromSnapshot(map,nav,{...s,version:3}),/Unsupported snapshot version/);
+ assert.throws(()=>Simulation.fromSnapshot(map,nav,{...s,version:2}),/Unsupported snapshot version/);
  assert.throws(()=>Simulation.fromSnapshot(map,nav,{...s,enemies:[{...s.enemies[0],kind:'boss?'}]}),/Unknown enemy kind/);
 });
 

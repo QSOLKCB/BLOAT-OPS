@@ -8,7 +8,9 @@ import { ENEMIES, updateEnemies } from './enemies.js';
 import { activateAbility } from './ability.js';
 import { updateWeapons, updateProjectiles } from './weapons.js';
 import { updateObjectives } from './objectives.js';
-export const TICK=1/60, MAX_ENEMIES=32;
+export const TICK=1/60, MAX_ENEMIES=32, SNAPSHOT_VERSION=3;
+// A gate opens when the mission reaches this stage (intake, hall, chamber exit after the Architect).
+export const GATE_STAGES=[3,4,7];
 export function normalizeInput(input={}) {
   const finite=(v,f=0)=>Number.isFinite(v)?v:f;
   return {forward:clamp(finite(input.forward),-1,1),side:clamp(finite(input.side),-1,1),jump:!!input.jump,sprint:!!input.sprint,fire:!!input.fire,secondary:!!input.secondary,firePresses:Number.isInteger(input.firePresses)?clamp(input.firePresses,0,8):null,altPresses:Number.isInteger(input.altPresses)?clamp(input.altPresses,0,8):null,toggleMode:!!input.toggleMode,aim:!!input.aim,ability:!!input.ability,interact:!!input.interact,weapon:input.weapon===1?1:input.weapon===0?0:-1,angles:[clamp(finite(input.angles?.[0]),-85,85),((finite(input.angles?.[1])%360)+360)%360,0]};
@@ -65,20 +67,20 @@ export class Simulation {
       s.used=true;p.health=Math.min(p.maxHealth,p.health+55);p.ammo[0]=Math.min(300,p.ammo[0]+90);if(p.hasRifle){p.ammo[1]=Math.min(300,p.ammo[1]+90);p.ammo[2]=Math.min(20,p.ammo[2]+4);}this.emit('supply');
     }
     updateObjectives(this,input);
-    this.world.movers.forEach((gate,i)=>gate.solid=this.stage<[3,4,6][i]);
+    this.world.movers.forEach((gate,i)=>gate.solid=this.stage<GATE_STAGES[i]);
   }
   snapshot() {
     const actor=a=>({id:a.id,origin:a.origin,velocity:a.velocity,angles:a.angles,health:a.health,dead:a.dead,onGround:a.onGround,jumpHeld:a.jumpHeld,waterLevel:a.waterLevel,waterType:a.waterType});
-    return {version:2,seed:this.seed,rng:this.rng.state,tick:this.tick,nextId:this.nextId,status:this.status,stage:this.stage,relays:this.relays,wave:this.wave,waveAt:this.waveAt,interactTicks:this.interactTicks,interactId:this.interactId,lastAbility:this.lastAbility,lastFireHeld:this.lastFireHeld,lastAltHeld:this.lastAltHeld,lastMode:this.lastMode,
+    return {version:SNAPSHOT_VERSION,seed:this.seed,rng:this.rng.state,tick:this.tick,nextId:this.nextId,status:this.status,stage:this.stage,relays:this.relays,wave:this.wave,waveAt:this.waveAt,interactTicks:this.interactTicks,interactId:this.interactId,lastAbility:this.lastAbility,lastFireHeld:this.lastFireHeld,lastAltHeld:this.lastAltHeld,lastMode:this.lastMode,
       player:{...actor(this.player),ammo:this.player.ammo,hasRifle:this.player.hasRifle,rifleAuto:this.player.rifleAuto,nextGrenade:this.player.nextGrenade,lastAlt:this.player.lastAlt,weapon:this.player.weapon,nextFire:this.player.nextFire,lastFire:this.player.lastFire,lastWeapon:this.player.lastWeapon,unlocked:this.player.unlocked,charge:this.player.charge,abilityUntil:this.player.abilityUntil,abilityReady:this.player.abilityReady,aiming:this.player.aiming},
-      enemies:this.enemies.map(e=>({...actor(e),kind:e.kind,state:e.state,awake:e.awake,windup:e.windup,nextAttack:e.nextAttack,stunUntil:e.stunUntil,immuneUntil:e.immuneUntil,nextPath:e.nextPath,path:e.path,pathIndex:e.pathIndex,heardShot:e.heardShot,deathTick:e.deathTick,lastDamage:e.lastDamage})),
+      enemies:this.enemies.map(e=>({...actor(e),kind:e.kind,phase2:e.phase2,state:e.state,awake:e.awake,windup:e.windup,nextAttack:e.nextAttack,stunUntil:e.stunUntil,immuneUntil:e.immuneUntil,nextPath:e.nextPath,path:e.path,pathIndex:e.pathIndex,heardShot:e.heardShot,deathTick:e.deathTick,lastDamage:e.lastDamage})),
       projectiles:this.projectiles.map(p=>({...p,prevOrigin:undefined})),supplies:this.supplies.map(s=>s.used),stats:this.stats};
   }
   // Rebuild a run from snapshot() output (checkpoints, replay tooling). Every field gameplay reads is either
   // in the snapshot or a per-kind constant; tests/checkpoint.test.mjs proves that a restored run continues
-  // with the identical raw state on every later tick. Snapshot version 2 is unchanged by this.
+  // with the identical raw state on every later tick.
   static fromSnapshot(map,nav,snap) {
-    if(!snap||snap.version!==2) throw new Error('Unsupported snapshot version '+snap?.version);
+    if(!snap||snap.version!==SNAPSHOT_VERSION) throw new Error('Unsupported snapshot version '+snap?.version);
     const g=new Simulation(map,nav,snap.seed),copy=v=>Array.isArray(v)?v.slice():v;
     g.rng.state=snap.rng>>>0;
     for(const k of ['tick','nextId','status','stage','wave','waveAt','interactTicks','interactId','lastAbility','lastFireHeld','lastAltHeld','lastMode'])g[k]=snap[k];
@@ -89,7 +91,7 @@ export class Simulation {
     g.enemies=snap.enemies.map(se=>{const def=ENEMIES[se.kind];if(!def)throw new Error('Unknown enemy kind '+se.kind);const e=g.actor(se.origin,def.speed);for(const [k,v] of Object.entries(se))e[k]=copy(v);e.maxHealth=def.health;e.prevOrigin=e.origin.slice();return e;});
     g.projectiles=snap.projectiles.map(sp=>{const pr={};for(const [k,v] of Object.entries(sp))pr[k]=copy(v);pr.prevOrigin=pr.origin.slice();return pr;});
     g.supplies.forEach((s,i)=>s.used=!!snap.supplies[i]);
-    g.world.movers.forEach((gate,i)=>gate.solid=g.stage<[3,4,6][i]);
+    g.world.movers.forEach((gate,i)=>gate.solid=g.stage<GATE_STAGES[i]);
     return g;
   }
   digest() {

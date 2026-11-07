@@ -28,6 +28,8 @@ export const ENCOUNTERS = [
   [['harvester', 2590, -380], ['harvester', 2690, 380], ['manager', 3270, -340], ['harvester', 3340, 310]],
   [['manager', 2510, 280], ['harvester', 2700, -330], ['manager', 3280, 330], ['harvester', 3340, -290]],
   [['harvester', 2580, 350], ['manager', 2740, -300], ['harvester', 3130, -350], ['manager', 3360, 300]],
+  [['architect', 2900, 0]],
+  [['harvester', 2600, -330], ['harvester', 2600, 330]],
 ];
 
 export function buildLevel() {

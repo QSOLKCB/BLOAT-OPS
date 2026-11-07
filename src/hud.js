@@ -18,8 +18,10 @@ export class HUD {
     panel(margin,margin,Math.min(410,w-2*margin),70);
     text('MISSION 001 / '+zone.name,margin+17,margin+21,9,AMBER);
     text(OBJECTIVES[g.stage],margin+17,margin+43,w<800?11:13);
+    const boss=g.enemies.find(e=>ENEMIES[e.kind].boss&&!e.dead);
+    if(boss){const bw=Math.min(520,w-2*margin),bx=(w-bw)/2,by=margin+34;text(ENEMIES[boss.kind].name+(boss.phase2?'  /  ESCALATED':''),w/2,by-8,11,boss.phase2?'#f0a38a':AMBER,'center');c.fillStyle='rgba(12,15,16,.84)';c.fillRect(bx,by,bw,7);c.fillStyle=boss.phase2?'#e2603d':AMBER;c.fillRect(bx,by,bw*boss.health/boss.maxHealth,7);c.fillStyle=PAPER;c.fillRect(bx+bw/2-1,by-2,2,11);}
     if(a.watch){const n=a.watch.replay.inputs.length;text('▶ REPLAY  '+Math.min(g.tick,n)+' / '+n+'  /  ESC OR START TO STOP',w/2,margin+18,11,AMBER,'center');}
-    text('0'+Math.min(7,g.stage+1)+' / 07   •   '+g.alive+' HOSTILES',margin+17,margin+59,9,'#a9aca5');
+    text(String(Math.min(OBJECTIVES.length,g.stage+1)).padStart(2,'0')+' / '+String(OBJECTIVES.length).padStart(2,'0')+'   •   '+g.alive+' HOSTILES',margin+17,margin+59,9,'#a9aca5');
     // Direction indicator is driven by the actual objective location.
     const target=objectiveTarget(g),d=v3.sub(target,p.origin);let bearing=Math.atan2(d[1],d[0])*180/Math.PI-p.angles[1];bearing=((bearing+540)%360)-180;
     const dir=Math.abs(bearing)<20?'▲':bearing>0?'◀':'▶';

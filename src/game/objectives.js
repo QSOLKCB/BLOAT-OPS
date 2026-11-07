@@ -3,12 +3,13 @@ import { POWERUP, RELAYS, CORE, EXTRACT, ENCOUNTERS } from './level.js';
 export const OBJECTIVES = [
   'CLEAR TELEMETRY INTAKE', 'RECOVER SHITPOSTER FIRMWARE',
   'BREAK THE CORPORATE AMBUSH', 'ISOLATE BOTH MIDDLEWARE RELAYS',
-  'DISABLE THE BLOAT CORE', 'SURVIVE THE RESTRUCTURING', 'REACH EXTRACTION',
+  'DISABLE THE BLOAT CORE', 'SURVIVE THE RESTRUCTURING', 'TERMINATE THE SOLUTIONS ARCHITECT', 'REACH EXTRACTION',
 ];
+export const BOSS_ENCOUNTER=7, BOSS_ADDS=8;
 export function objectiveTarget(g) {
   if(g.stage===0) return [1070,0,30];
   if(g.stage===1) return POWERUP;
-  if(g.stage===2||g.stage===5) return g.enemies.find(e=>!e.dead)?.origin||CORE;
+  if(g.stage===2||g.stage===5||g.stage===6) return g.enemies.find(e=>!e.dead)?.origin||CORE;
   if(g.stage===3) return RELAYS[g.relays[0]?1:0];
   return g.stage===4?CORE:EXTRACT;
 }
@@ -39,7 +40,13 @@ export function updateObjectives(g,input) {
   if(g.stage===3 && g.relays.every(Boolean) && g.alive===0) {g.stage=4;g.spawnEncounter(3);g.emit('objective',{text:'ENTER THE DEPENDENCY CHAMBER. CLEAR CORE SECURITY.'});}
   if(g.stage===5 && g.alive===0 && g.tick>=g.waveAt) {
     if(g.wave<3) {g.spawnEncounter(4+g.wave);g.wave++;g.waveAt=g.tick+240;g.emit('objective',{text:'RESTRUCTURING WAVE '+g.wave+' / 3'});}
-    else {g.stage=6;g.emit('objective',{text:'CORPORATE OVERHEAD REDUCED. REACH EXTRACTION.'});}
+    else {g.stage=6;g.spawnEncounter(BOSS_ENCOUNTER);g.emit('boss',{text:'THE ENTERPRISE SOLUTIONS ARCHITECT HAS JOINED THE CALL.'});}
   }
-  if(g.stage===6 && v3.dist(p.origin,EXTRACT)<95) {g.status='victory';g.emit('victory',{text:'YOUR DEPENDENCIES HAVE BEEN TERMINATED.'});}
+  if(g.stage===6) {
+    // The Architect escalates exactly once, at half health, and calls two bounded adds.
+    const boss=g.enemies.find(e=>e.kind==='architect');
+    if(boss&&!boss.dead&&!boss.phase2&&boss.health<=boss.maxHealth/2){boss.phase2=true;g.spawnEncounter(BOSS_ADDS);g.emit('phase',{text:'RE-ORG IN PROGRESS. THE ARCHITECT IS ESCALATING.'});}
+    if(g.alive===0){g.stage=7;g.emit('objective',{text:'ARCHITECTURE REVIEW FAILED. REACH EXTRACTION.'});}
+  }
+  if(g.stage===7 && v3.dist(p.origin,EXTRACT)<95) {g.status='victory';g.emit('victory',{text:'YOUR DEPENDENCIES HAVE BEEN TERMINATED.'});}
 }
