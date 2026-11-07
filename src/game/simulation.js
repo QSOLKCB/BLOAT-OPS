@@ -108,10 +108,12 @@ export function decodeState(text){return JSON.parse(text,(_k,v)=>v&&typeof v==='
 // Rendering cadence supplies elapsed time; recorded commands are consumed by simulation tick.
 // Browsers round frame timestamps (often to 0.1 ms), so a 60 Hz display reports 16.7, 16.6, 16.7 ms.
 // Compared exactly, one frame in three then runs no tick and the next runs two. A frame within 0.5 ms
-// of a whole number of ticks counts as exactly that many (as in QSOLKCB/ARCADE v0.4.0). This changes
-// only real-time pacing: replays and the simulation consume one command per tick regardless.
+// of a whole number of ticks counts as exactly that many (as in QSOLKCB/ARCADE v0.4.0). The time that
+// snapping adds or removes is carried as drift: frames snap only while the total stays under 0.5 ms and
+// the next unsnapped frame repays it, so a steady 59 or 61 Hz display no longer runs 1.7% slow or fast.
+// This changes only real-time pacing: replays and the simulation consume one command per tick regardless.
 export class FixedClock {
-  constructor(){this.accum=0;this.dropped=0;}
-  advance(seconds,step){if(!Number.isFinite(seconds))seconds=0;let clamped=Math.max(0,Math.min(.25,seconds));this.dropped+=Math.max(0,seconds-clamped);const whole=Math.round(clamped/TICK);if(whole>=1&&Math.abs(clamped-whole*TICK)<.0005)clamped=whole*TICK;this.accum+=clamped;let count=0;while(this.accum+1e-10>=TICK&&count<15){step();this.accum-=TICK;count++;}this.accum=Math.max(0,this.accum);return count;}
-  reset(){this.accum=0;}
+  constructor(){this.accum=0;this.dropped=0;this.drift=0;}
+  advance(seconds,step){if(!Number.isFinite(seconds))seconds=0;let clamped=Math.max(0,Math.min(.25,seconds));this.dropped+=Math.max(0,seconds-clamped);const whole=Math.round(clamped/TICK),drift=this.drift+clamped-whole*TICK;if(whole>=1&&Math.abs(drift)<.0005){this.drift=drift;clamped=whole*TICK;}else{clamped=Math.max(0,clamped+this.drift);this.drift=0;}this.accum+=clamped;let count=0;while(this.accum+1e-10>=TICK&&count<15){step();this.accum-=TICK;count++;}this.accum=Math.max(0,this.accum);return count;}
+  reset(){this.accum=0;this.drift=0;}
 }

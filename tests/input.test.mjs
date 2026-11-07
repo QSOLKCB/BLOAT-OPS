@@ -40,4 +40,6 @@ test('menu navigation is edge-triggered, repeats when held and re-arms on menu o
 test('fixed clock absorbs rounded browser timestamps: one tick per 60 Hz frame, two per 30 Hz frame',()=>{
  for(const [hz,per] of [[60,1],[30,2]]){const c=new FixedClock();let last=0,uneven=0,ticks=0;for(let i=1;i<=hz*60;i++){const now=Math.round(i*1000/hz*10)/10;const n=c.advance((now-last)/1000,()=>ticks++);last=now;if(n!==per)uneven++;}assert.equal(uneven,0,hz+' Hz frames with an uneven tick count');assert.equal(ticks,3600);assert.equal(c.dropped,0);}
  const c=new FixedClock();assert.equal(c.advance(2,()=>{}),15);assert(Math.abs(c.dropped-1.75)<1e-9,'only time beyond the 250 ms clamp counts as dropped');
+ // Snapping repays its drift: steady displays near a whole tick count keep 60 ticks per second.
+ for(const hz of [59,61,30,120,144,75]){const clock=new FixedClock();let ticks=0;for(let i=0;i<hz*60;i++)clock.advance(1/hz,()=>ticks++);assert(Math.abs(ticks-3600)<=1,`${hz} Hz ran ${ticks} ticks in 60 s`);}
 });
