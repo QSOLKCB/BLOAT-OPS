@@ -74,6 +74,24 @@ export class Simulation {
       enemies:this.enemies.map(e=>({...actor(e),kind:e.kind,state:e.state,awake:e.awake,windup:e.windup,nextAttack:e.nextAttack,stunUntil:e.stunUntil,immuneUntil:e.immuneUntil,nextPath:e.nextPath,path:e.path,pathIndex:e.pathIndex,heardShot:e.heardShot,deathTick:e.deathTick,lastDamage:e.lastDamage})),
       projectiles:this.projectiles.map(p=>({...p,prevOrigin:undefined})),supplies:this.supplies.map(s=>s.used),stats:this.stats};
   }
+  // Rebuild a run from snapshot() output (checkpoints, replay tooling). Every field gameplay reads is either
+  // in the snapshot or a per-kind constant; tests/checkpoint.test.mjs proves that a restored run continues
+  // with the identical raw state on every later tick. Snapshot version 2 is unchanged by this.
+  static fromSnapshot(map,nav,snap) {
+    if(!snap||snap.version!==2) throw new Error('Unsupported snapshot version '+snap?.version);
+    const g=new Simulation(map,nav,snap.seed),copy=v=>Array.isArray(v)?v.slice():v;
+    g.rng.state=snap.rng>>>0;
+    for(const k of ['tick','nextId','status','stage','wave','waveAt','interactTicks','interactId','lastAbility','lastFireHeld','lastAltHeld','lastMode'])g[k]=snap[k];
+    g.relays=snap.relays.slice();g.stats={...snap.stats};g.events=[];
+    const sp=snap.player,p=g.player;
+    for(const [k,v] of Object.entries(sp))p[k]=copy(v);
+    p.prevOrigin=p.origin.slice();
+    g.enemies=snap.enemies.map(se=>{const def=ENEMIES[se.kind];if(!def)throw new Error('Unknown enemy kind '+se.kind);const e=g.actor(se.origin,def.speed);for(const [k,v] of Object.entries(se))e[k]=copy(v);e.maxHealth=def.health;e.prevOrigin=e.origin.slice();return e;});
+    g.projectiles=snap.projectiles.map(sp=>{const pr={};for(const [k,v] of Object.entries(sp))pr[k]=copy(v);pr.prevOrigin=pr.origin.slice();return pr;});
+    g.supplies.forEach((s,i)=>s.used=!!snap.supplies[i]);
+    g.world.movers.forEach((gate,i)=>gate.solid=g.stage<[3,4,6][i]);
+    return g;
+  }
   digest() {
     // Digest coordinates at one-millionth of a world unit; timers/IDs remain exact.
     // Raw snapshots are still compared exactly within each tested runtime.
@@ -82,6 +100,9 @@ export class Simulation {
     return (h>>>0).toString(16).padStart(8,'0');
   }
 }
+// Exact text encoding for checkpoints: JSON, except that -0 and non-finite numbers survive the round trip.
+export function encodeState(snap){return JSON.stringify(snap,(_k,v)=>typeof v==='number'&&(Object.is(v,-0)||!Number.isFinite(v))?{$n:Object.is(v,-0)?'-0':String(v)}:v);}
+export function decodeState(text){return JSON.parse(text,(_k,v)=>v&&typeof v==='object'&&!Array.isArray(v)&&typeof v.$n==='string'&&Object.keys(v).length===1?Number(v.$n):v);}
 // Rendering cadence supplies elapsed time; recorded commands are consumed by simulation tick.
 // Browsers round frame timestamps (often to 0.1 ms), so a 60 Hz display reports 16.7, 16.6, 16.7 ms.
 // Compared exactly, one frame in three then runs no tick and the next runs two. A frame within 0.5 ms
